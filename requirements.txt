@@ -1,0 +1,4 @@
+Sphinx==2.4.4
+sphinx-intl==2.0.0
+nbsphinx
+ipykernel
