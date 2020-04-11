@@ -1,20 +1,15 @@
 Pipeline API
 ------------
 
-The Pipeline API is a powerful tool for cross-sectional analysis of
-asset data. It allows us to define a set of calculations on multiple
-data inputs and analyze a large amount of assets at a time. Some common
-uses for the Pipeline API include:
+Pipeline APIは、以下のような横断的に資産データ分析を行うための強力なツールです。複数のデータをにたいして一連の演算を行い、一度に大量の資産を分析します。いくつかの一般的なPipeline API の用途としては、以下のようなものがあります。
 
--  Selecting assets based on filtering rules
--  Ranking assets based on a scoring function
--  Calculating portfolio allocations
+- フィルタリングルールに基づいた資産の選択
+- スコアリング関数に基づく資産のランク付け
+- ポートフォリオの配分を計算する
 
-To begin, let’s import the Pipeline class and create a function that
-returns an empty pipeline. Putting our pipeline definition inside a
-function helps us keep things organized as our pipeline grows in
-complexity. This is particularly helpful when transferring data
-pipelines between Research and the IDE.
+まず、Pipelineクラスをインポートして、空の pipeline を返す関数を作成します。
+関数のなかで pipeline を定義しておくと、 複雑な処理を行う場合でも、整った方法で定義をおこなうことが出来ます。
+これは、特に Research から pipeline の定義を IDE に移行する時に便利です。
 
 .. code:: ipython2
 
@@ -22,7 +17,7 @@ pipelines between Research and the IDE.
     from quantopian.pipeline import Pipeline
     
     def make_pipeline():
-        # Create and return an empty Pipeline
+        # 空の Pipeline を作成し返す。
         return Pipeline()
 
 To add an output to our pipeline we need to include a reference to a
@@ -31,17 +26,21 @@ For example, we will add a reference to the ``close`` column from the
 ``USEquityPricing`` dataset. Then, we can define our output to be the
 latest value from this column as follows:
 
+pipeline にデータ出力を追加するには、データセットに参照を追加し、そのデータに対して行いたい演算を定義します。
+例えば、``USEquityPricing`` データセットから ``close`` 列への参照を追加し、日々の最新の値を出力するように定義するにはこのように記述します。
+
+
 .. code:: ipython2
 
-    # Import Pipeline class and USEquityPricing dataset
+    # Pipeline class と USEquityPricing dataset　を import
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data import USEquityPricing
     
     def make_pipeline():
-        # Get latest closing price
+        # 日々の最終価格を取得
         close_price = USEquityPricing.close.latest
     
-        # Return Pipeline containing latest closing price
+        # 上記のデータを Pipeline に入れて返す　
         return Pipeline(
             columns={
                 'close_price': close_price,
@@ -53,29 +52,30 @@ of which are computed over trailing windows of data. For example, the
 following code imports Psychsignal’s ``stocktwits`` dataset and defines
 an output as the 3 day moving average of its ``bull_minus_bear`` column:
 
+Pipeline API では、組み込み計算機能が多数提供されています。一定期間を移動しながら計算する演算機能なども機能として提供されています。たとえば、Psychsignalの ``stocktwits`` データセットで提供されている、  ``bull_minus_bear`` データを使って3日移動平均を出力するコードは以下のように定義できます。
+
 .. code:: ipython2
 
-    # Import Pipeline class and datasets
+    # Pipeline と データセットをインポート
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data import USEquityPricing
     from quantopian.pipeline.data.psychsignal import stocktwits
     
-    # Import built-in moving average calculation
+    # 移動平均を計算する関数をインポート
     from quantopian.pipeline.factors import SimpleMovingAverage
     
     
     def make_pipeline():
-        # Get latest closing price
+        # 日々の最終価格を取得
         close_price = USEquityPricing.close.latest
     
-        # Calculate 3 day average of bull_minus_bear scores
+        # bull_minus_bearスコアの3日移動平均を演算
         sentiment_score = SimpleMovingAverage(
             inputs=[stocktwits.bull_minus_bear],
             window_length=3,
         )
     
-        # Return Pipeline containing close_price
-        # and sentiment_score
+        # pipelineに、最終価格と、センチメントスコアを入れて、返す
         return Pipeline(
             columns={
                 'close_price': close_price,
@@ -86,46 +86,41 @@ an output as the 3 day moving average of its ``bull_minus_bear`` column:
 Universe Selection
 ~~~~~~~~~~~~~~~~~~
 
-An important part of developing a strategy is defining the set of assets
-that we want to consider trading in our portfolio. We usually refer to
-this set of assets as our trading universe.
+戦略開発の重要な部分は、資産のセットを定義することです。つまり、複数の銘柄からなるポートフォリオをつくって、取引することを考えることです。この資産セットのことを、トレーディング・ユニバース（trading universe）と呼びます。
 
-A trading universe should be as large as possible, while also excluding
-assets that aren’t appropriate for our portfolio. For example, we want
-to exclude stocks that are illiquid or difficult to trade. Quantopian’s
-``QTradableStocksUS`` universe offers this characteristic. We can set
-``QTradableStocksUS`` as our trading universe using the screen parameter
-of our pipeline constructor:
+トレーディング・ユニバースは可能な限り大きくなければなりません。しかし同時、不必要な資産を排除する必要もあります。
+例えば、流動性の低い銘柄や、取引困難な銘柄などは取り除きたいでしょう。
+Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色をすでに持つユニバースです。よって、 pipeline のスクリーニングパラメータを使って、 ``QTradableStocksUS`` を私達のトレーディング・ユニバースに設定してみましょう。
+
 
 .. code:: ipython2
 
-    # Import Pipeline class and datasets
+    # Pipeline と　データセットをインポート
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data import USEquityPricing
     from quantopian.pipeline.data.psychsignal import stocktwits
     
-    # Import built-in moving average calculation
+    # 移動平均を計算する関数をインポート
     from quantopian.pipeline.factors import SimpleMovingAverage
     
-    # Import built-in trading universe
+    # 組み込みトレーディング・ユニバースをインポート
     from quantopian.pipeline.filters import QTradableStocksUS
     
     
     def make_pipeline():
-        # Create a reference to our trading universe
+        # トレーディング・ユニバースへの参照を作成
         base_universe = QTradableStocksUS()
     
-        # Get latest closing price
+        # 日々の最終価格を取得
         close_price = USEquityPricing.close.latest
     
-        # Calculate 3 day average of bull_minus_bear scores
+        # bull_minus_bearスコアの3日移動平均を演算
         sentiment_score = SimpleMovingAverage(
             inputs=[stocktwits.bull_minus_bear],
             window_length=3,
         )
     
-        # Return Pipeline containing close_price and
-        # sentiment_score that has our trading universe as screen
+        # pipelineに、最終価格と、センチメントスコア、スクリーニングとして、トレーディング・ユニバースを入れて返す
         return Pipeline(
             columns={
                 'close_price': close_price,
@@ -134,25 +129,21 @@ of our pipeline constructor:
             screen=base_universe
         )
 
-Now that our pipeline definition is complete, we can execute it over a
-specific period of time using ``run_pipeline``. The output will be a
-pandas DataFrame indexed by date and asset, with columns corresponding
-to the outputs we added to our pipeline definition:
+これで pipeline の定義は完了しました。次に、``run_pipeline`` をつかって指定した期間で pipeline を実行してみましょう。出力結果は、 pandas の DataFrame で、日付と資産名が index に持ちます。列は、 pipeline で定義したカラムです。
 
 .. code:: ipython2
 
-    # Import run_pipeline method
+    # run_pipelineをインポート
     from quantopian.research import run_pipeline
     
-    # Execute pipeline created by make_pipeline
-    # between start_date and end_date
+    # start_date と end_dateを指定してｍmake_pipeline関数を実行して pipeline を実行。
     pipeline_output = run_pipeline(
         make_pipeline(),
         start_date='2013-01-01',
         end_date='2013-12-31'
     )
     
-    # Display last 10 rows
+    # 最初の10行を表示
     pipeline_output.tail(10)
 
 
@@ -228,6 +219,4 @@ to the outputs we added to our pipeline definition:
 
 
 
-In the next lesson we will formalize the strategy our algorithm will use
-to select assets to trade. Then, we will use a factor analysis tool to
-evaluate the predictive power of our strategy over historical data.
+次のレッスンでは、取引する資産を選択するためにアルゴリズムが使用する戦略を整えます。その後、過去のデータに対する戦略の予測力を評価するために、ファクター分析ツールを使ってみます。
