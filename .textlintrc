@@ -1,0 +1,18 @@
+{
+  "plugins": [
+        "rst"
+    ],
+  "filters": {},
+  "rules": {
+        "preset-ja-technical-writing": true,
+        "preset-jtf-style": {
+          "2.1.2.漢字": true,
+          "2.1.5.カタカナ": true,
+          "2.2.1.ひらがなと漢字の使い分け": true,
+          "3.3.かっこ類と隣接する文字の間のスペースの有無": false,
+        },
+        "prh": {
+          "rulePaths" :["WEB+DB_PRESS.yml", "quantopian-doc.yml"]
+        },
+    }
+}
