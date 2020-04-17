@@ -1,52 +1,40 @@
-Welcome to Quantopian! The Getting Started Tutorial will guide you
-through researching and developing a quantitative trading strategy on
-Quantopian. It covers many of the basics of Quantopian’s API, and is
-designed for those who are new to the platform. All you need to get
-started on this tutorial is to have some basic
-`Python <https://docs.python.org/2.7/>`__ programming skills.
+Quantopianへようこそ! この入門チュートリアルでは、Quantopianでのクオンツトレーディング戦略の研究と開発について説明します。このチュートリアルでは、Quantopian APIの基本的な機能を多く取り上げており、Quantopian を初めて利用する方を対象にしています。チュートリアルを始めるために必要なのは、基本的な `Python <https://docs.python.org/2.7/>`__ のプログラミングスキルだけです。
 
-What is a Trading Algorithm?
-----------------------------
 
-A trading algorithm is a computer program that defines a set of rules
-for buying and selling assets. Most trading algorithms make decisions
-based on mathematical or statistical models that are derived from
-research conducted on historical data.
+取引アルゴリズムとは？
+-------------------------
 
-Where do I start?
------------------
+取引アルゴリズムとは、資産を売買するための一連のルールを定義したコンピュータプログラムです。ほとんどの取引アルゴリズムは、過去のデータに基づいて行われた研究から得られた数学的または統計的なモデルに基づいて意思決定を行います。
 
-The first step to writing a trading algorithm is to find an economic or
-statistical relationship on which we can base our strategy. To do this,
-we can use Quantopian’s Research environment to access and analyze
-historical datasets available in the platform. Research is a `Jupyter
-Notebook <http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__
-environment that allows us to run Python code in units called ‘cells’.
+何から始めればいいですか？
+--------------------------
 
-For example, the following code plots the daily closing price for Apple
-Inc. (AAPL), along with its 20 and 50 day moving averages:
+取引アルゴリズムを書くために最初にすることは、戦略のベースとなる経済的または統計的な関係を見つけることです。QuantopianのResearch環境を使って、利用できる過去データセットにアクセスし、分析を行うことができます。Research は `Jupyter
+Notebook <http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__ 環境で提供されており、Pythonのコードを 'セル' と呼ばれる場所で実行することができます。
+
+例えば、以下のコードは、Apple Inc. (AAPL)の毎日の終値と20日と50日移動平均線をプロットしています。
+
 
 .. code:: ipython2
 
-    # Research environment functions
+    # Research 環境用関数
     from quantopian.research import prices, symbols
     
     # Pandas library: https://pandas.pydata.org/
     import pandas as pd
     
-    # Query historical pricing data for AAPL
+    # AAPL の過去の価格データを取得する
     aapl_close = prices(
         assets=symbols('AAPL'),
         start='2013-01-01',
         end='2016-01-01',
     )
     
-    # Compute 20 and 50 day moving averages on
-    # AAPL's pricing data
+    # AAPL の価格データより20日と50日の移動平均を算出する
     aapl_sma20 = aapl_close.rolling(20).mean()
     aapl_sma50 = aapl_close.rolling(50).mean()
     
-    # Combine results into a pandas DataFrame and plot
+    # 結果を結合して pandas の DataFrameに入れ、描画する
     pd.DataFrame({   
         'AAPL': aapl_close,
         'SMA20': aapl_sma20,
@@ -60,8 +48,5 @@ Inc. (AAPL), along with its 20 and 50 day moving averages:
 .. image:: notebook_files/notebook_5_0.png
 
 
-In the next lesson we will use Research to explore Quantopian’s
-datasets. Then, we will define our trading strategy and test whether it
-can effectively predict returns based on historical data. Finally, we
-will use our findings to develop and test a trading algorithm in the
-Interactive Development Environment (IDE).
+ではさっそく次のレッスンで、Researchを使ってQuantopianのデータセットをさわってみましょう。さらに、取引戦略を定義し、過去のデータに基づいてリターンを効果的に予測できるかどうかを検証してみます。最後に、その結果をもとに、インタラクティブ開発環境（IDE）で取引アルゴリズムを開発し、テストを行ってみましょう。
+

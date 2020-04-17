@@ -1,42 +1,29 @@
-Strategy Definition
+戦略定義
 -------------------
 
-Now that we have learned how to access and manipulate data in
-Quantopian, let’s construct a data pipeline for our long-short equity
-strategy. In general, long-short equity strategies consist of modeling
-the relative value of assets with respect to each other, and placing
-bets on the sets of assets that we are confident will increase
-(`long <https://www.investopedia.com/terms/l/long.asp>`__) and decrease
-(`short <https://www.investopedia.com/terms/s/short.asp>`__) the most in
-value.
+Quantopianのデータへのアクセスと操作方法を学んだところで、株式のロングショート戦略を行うためのデータをpipelineで構築してみましょう。　一般的に、 株式のロングショート戦略は、各資産の価値を比較し、最も上昇すると思われる資産群（`ロング <https://www.investopedia.com/terms/l/long.asp>`__) と、下落すると思われる資産群（`ショート <https://www.investopedia.com/terms/s/short.asp>`__）に掛ける戦略です。
 
-Long-short equity strategies profit as the spread in returns between the
-sets of high and low value assets increases. The quality of long-short
-equity strategy relies entirely on the quality of its underling ranking
-model. In this tutorial we will use a simple ranking schema for our
-strategy:
+株式のロングショート戦略は、高資産価値と低資産価値の差（スプレッド)が利益になります。この戦略は、株式のランキングモデルを完全に信頼して建てられた戦略です。このチュートリアルでは、簡単なランキングスキーマを使ってみます。
 
-**Strategy**: We will consider assets with a high 3 day average
-sentiment score as high value, and assets with a low 3 day average
-sentiment score as low value.
+**戦略**: センチメントスコアの3日移動平均を取得し、センチメントの高い銘柄と低い銘柄で、高資産価値と低資産価値を判断します。
 
-Strategy Analysis
+
+戦略分析
 -----------------
 
-We can define the strategy above using ``SimpleMovingAverage`` and
-``stocktwits``\ ’s ``bull_minus_bear`` data, similar to the pipeline we
-created in the previous lesson:
+上記の戦略は、 ``SimpleMovingAverage`` 関数と、　``stocktwits``\ の ``bull_minus_bear`` データを使って定義出来ます。先述した pipeline のレッスンと同じように書くことができます。
+
 
 .. code:: ipython2
 
-    # Pipeline imports
+    # Pipeline インポート
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data.psychsignal import stocktwits
     from quantopian.pipeline.factors import SimpleMovingAverage
     from quantopian.pipeline.filters import QTradableStocksUS
     
     
-    # Pipeline definition
+    # Pipeline 定義
     def  make_pipeline():
     
         base_universe = QTradableStocksUS()
@@ -53,23 +40,17 @@ created in the previous lesson:
             screen=base_universe
         )
 
-For simplicity, we will only analyze the top 350 and bottom 350 stocks
-ranked by ``sentiment_score``. We can create pipeline filters for these
-sets using the ``top`` and ``bottom`` methods of our ``sentiment_score``
-output, and combine them using the ``|`` operator to get their union.
-Then, we will remove anything outside of our tradable universe by using
-the ``&`` operator to get the intersection between our filter and our
-universe:
+説明を簡単にするために ``sentiment_score`` を使って上位及び下位350銘柄のみ分析することにします。これは、pipeline フィルターを作成すればできます。``sentiment_score`` の出力を、 ``top`` と ``bottom`` メソッドを使って上位と下位だけ取得するフィルターを作ります。上位と下位のメソッドを ``|`` オペレータ でつないで和集合を作れば可能です。次に、私達のトレーディングユニバースではない銘柄を排除するために、フィルターとユニバースを ``&`` オペレータでつなぎます。
 
 .. code:: ipython2
 
-    # Pipeline imports
+    # Pipeline インポート
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data.psychsignal import stocktwits
     from quantopian.pipeline.factors import SimpleMovingAverage
     from quantopian.pipeline.filters import QTradableStocksUS
     
-    # Pipeline definition
+    # Pipeline 定義
     def  make_pipeline():
     
         base_universe = QTradableStocksUS()
@@ -79,8 +60,7 @@ universe:
             window_length=3,
         )
     
-        # Create filter for top 350 and bottom 350
-        # assets based on their sentiment scores
+        # センチメントスコアに基づいて上位下位350銘柄のみを取得するフィルターを作成
         top_bottom_scores = (
             sentiment_score.top(350) | sentiment_score.bottom(350)
         )
@@ -89,70 +69,61 @@ universe:
             columns={
                 'sentiment_score': sentiment_score,
             },
-            # Set screen as the intersection between our filter
-            # and trading universe
+            # 定義したフィルターとトレーディングユニバースのどちらにも入っている銘柄のみにスクリーニングする
             screen=(
                 base_universe
                 & top_bottom_scores
             )
         )
 
-Next, let’s run our pipeline over a 3 year period to get an output we
-can use for our analysis. This will take ~1 minute.
+では、分析に使用できる出力を得るために、3年間の pipeline を実行してみましょう。これには1分ほどかかります
+
 
 .. code:: ipython2
 
-    # Import run_pipeline method
+    # run_pipeline インポート
     from quantopian.research import run_pipeline
     
-    # Specify a time range to evaluate
+    # 評価する期間を指定
     period_start = '2013-01-01'
     period_end = '2016-01-01'
     
-    # Execute pipeline over evaluation period
+    # 指定期間で pipeline 実行
     pipeline_output = run_pipeline(
         make_pipeline(),
         start_date=period_start,
         end_date=period_end
     )
 
-In addition to sentiment data, we will need pricing data for all assets
-present in this period. We can easily get a list of these assets from
-our pipeline output’s index, and pass that list to ``prices`` to get the
-pricing data we need:
+センチメントデータに加えて、この期間の資産価格も必要です。 pipeline が出力する DataFrame のindexは資産リストですので、そのリストを  ``prices`` に渡せば価格データを得ることが出来ます。
+
 
 .. code:: ipython2
 
-    # Import prices function
+    # prices 関数をインポート
     from quantopian.research import prices
     
-    # Get list of unique assets from the pipeline output
+    # pipeline が出力した dataframe の index から資産リストを取得し、 unique 関数を使って、重複しないリストを取得します。
     asset_list = pipeline_output.index.levels[1].unique()
     
-    # Query pricing data for all assets present during
-    # evaluation period
+    # 資産リストに入っている銘柄全てに対して、指定期間の価格を取得します。
     asset_prices = prices(
         asset_list,
         start=period_start,
         end=period_end
     )
 
-Now we can use Quantopian’s open source factor analysis tool,
-`Alphalens <https://www.quantopian.com/lectures/factor-analysis-with-alphalens>`__,
-to test the quality of our selection strategy. First, let’s combine our
-factor and pricing data using get_clean_factor_and_forward_returns. This
-function classifies our factor data into quantiles and computes forward
-returns for each security for multiple holding periods. We will separate
-our factor data into 2 quantiles (the top and bottom half), and use 1, 5
-and 10 day holding periods:
+
+次に、Quantopianが作ったオープンソース分析ツールである、 `Alphalens <https://www.quantopian.com/lectures/factor-analysis-with-alphalens>`__ を使って、私達の戦略の品質を検証してみましょう。まず、 get_clean_factor_and_forward_returns 関数をつかって、ファクターと価格データを組み合わせます。この関数は、ファクターデータをクォンタイルに分類し、評価日から数日のあいだ銘柄を保有した場合、収益がいくらになるか計算します。（複数の期間にたいして計算します。）
+ここでは、ファクターデータを上位と下位半分ずつにわけ、1日、5日、10日後の収益結果をみます。
+
 
 .. code:: ipython2
 
-    # Import Alphalens
+    # Alphalens インポート
     import alphalens as al
     
-    # Get asset forward returns and quantile classification
-    # based on sentiment scores
+    # センチメントスコアに基づいて、quantileに指定された分位数にわける
     factor_data = al.utils.get_clean_factor_and_forward_returns(
         factor=pipeline_output['sentiment_score'],
         prices=asset_prices,
@@ -160,7 +131,7 @@ and 10 day holding periods:
         periods=(1,5,10),
     )
     
-    # Display first 5 rows
+    # 上から5行を表示
     factor_data.head(5)
 
 
@@ -244,19 +215,16 @@ and 10 day holding periods:
 
 
 
-Having our data in this format allows us to use several of Alphalens’s
-analysis and plotting tools. Let’s start by looking at the mean returns
-by quantile over the entire period. Because our goal is to build a
-long-short strategy, we want to see the lower quantile (1) have negative
-returns and the upper quantile(2) have positive returns:
+
+出力結果を、 Alphalens に渡すと、分析や描画のツールを使うことができるようになります。ではまず、指定した全期間における、平均の収益をクォンタイルごとに見てみましょう。私達の戦略はロングショート戦略なので、下位のクォンタイルの収益がネガティブ、上位のクォンタイルの収益がポジティブであれば良いですね。
+
 
 .. code:: ipython2
 
-    # Calculate mean return by factor quantile
+    # ファクターのクォンタイル別に、平均を算出
     mean_return_by_q, std_err_by_q = al.performance.mean_return_by_quantile(factor_data)
     
-    # Plot mean returns by quantile and holding period
-    # over evaluation time range
+    # クォンタイルと保有ごとに、平均を描画
     al.plotting.plot_quantile_returns_bar(
         mean_return_by_q.apply(
             al.utils.rate_of_return,
@@ -270,16 +238,15 @@ returns and the upper quantile(2) have positive returns:
 .. image:: notebook_files/notebook_14_0.png
 
 
-We can also plot the cumulative returns of a factor-weighted long-short
-portfolio with a 5 day holding period using the following code:
+次に、5日間保有した場合の累積収益を見てみましょう。ただし今回は、ロングとショートのポートフォリオにファクターでウェイトをかけます。
 
 .. code:: ipython2
 
     import pandas as pd
-    # Calculate factor-weighted long-short portfolio returns
+    # ファクターでウェイト付けしたロングショートのポートフォリオを収益を算出
     ls_factor_returns = al.performance.factor_returns(factor_data)
     
-    # Plot cumulative returns for 5 day holding period
+    # 5日間保有した場合の累積収益を描画
     al.plotting.plot_cumulative_returns(ls_factor_returns['5D'], '5D', freq=pd.tseries.offsets.BDay());
 
 
@@ -287,13 +254,8 @@ portfolio with a 5 day holding period using the following code:
 .. image:: notebook_files/notebook_16_0.png
 
 
-The plot above shows a large drawdown period, and this analysis does not
-yet take into account transaction costs or market impact. It is not a
-very promising strategy. At this point we really should conduct a deeper
-analysis using Alphalens and then iterate on our strategy idea. But for
-the sake of this tutorial, let’s continue with our strategy as it is.
+上のプロットは大きなドローダウン期間を示していますね。この分析には、取引コストやマーケットインパクトをまだ考慮に入れていません。よって、あまり有望な戦略とはいえないようです。今後、より深い分析をAlphalensを使って行うべきですし、繰り返し戦略アイデアに取組む必要があるでしょう。しかし今はチュートリアルですので、この戦略のままで行きたいと思います。
 
-Having defined and tested a strategy, let’s use it to build and test a
-long-short equity algorithm. The rest of the tutorial will cover the
-Algorithm API and will take place in the Interactive Development
-Environment (IDE).
+さて、戦略を定義し検証しました。次に、私達の株式ロングショート戦略をバックテスト用にビルドし検証しましょう。
+このあとのチュートリアルでは、 Interactive Development Environment (IDE)を使って、Algorithm API を使っていきます。
+

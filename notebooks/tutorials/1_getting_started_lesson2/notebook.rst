@@ -1,39 +1,33 @@
-Data Exploration
+データを探す
 ----------------
 
-Research provides utility functions to query pricing, volume, and
-returns data for 8000+ US equities, from 2002 up to the most recently
-completed trading day. These functions take an asset (or list of assets)
-along with a start and end date, and return a pandas
-`Series <http://pandas.pydata.org/pandas-docs/version/0.18/generated/pandas.Series.html>`__
-(or
+Research は、価格、出来高、およびリターンを照会するためのユーティリティ関数を提供します。
+データは、2002年から今日現在までの8000株以上の米国株式データです。これらの関数は、資産（または資産のリスト）、開始日、終了日を引数として受け取り、日付を index に持つ、pandas の
+`Series <http://pandas.pydata.org/pandas-docs/version/0.18/generated/pandas.Series.html>`__ （もしくは
 `DataFrame <http://pandas.pydata.org/pandas-docs/version/0.18/generated/pandas.DataFrame.html>`__)
-indexed by date.
+で返ります。
 
-Let’s define the period of time we want to explore and use the
-``returns`` function to query data for AAPL:
+取得したい日付を定義して、AAPLのリターンを ``returns`` 関数を使って照会してみましょう。
+
 
 .. code:: ipython2
 
-    # Research environment functions
+    # Research 環境用関数
     from quantopian.research import returns, symbols
     
-    # Select a time range to inspect
+    # 時間範囲を指定
     period_start = '2014-01-01'
     period_end = '2014-12-31'
     
-    # Query returns data for AAPL
-    # over the selected time range
+    # 上記の時間範囲で、AAPLのリターンデータを照会する
     aapl_returns = returns(
         assets=symbols('AAPL'),
         start=period_start,
         end=period_end,
     )
     
-    # Display first 10 rows
+    # 最初の10行のみ表示
     aapl_returns.head(10)
-
-
 
 
 .. parsed-literal::
@@ -52,31 +46,22 @@ Let’s define the period of time we want to explore and use the
 
 
 
-Alternative Data
+さまざまなデータ
 ~~~~~~~~~~~~~~~~
 
-In addition to pricing and volume data, Quantopian integrates a number
-of alternative datasets that include corporate fundamentals, stock
-sentiment analysis, and macroeconomic indicators, to name a few. You can
-find the complete list of 50+ datasets on Quantopian’s `data
-page <https://www.quantopian.com/data>`__.
+Quantopianには、価格データと数量データに加えて、企業のファンダメンタルズ、センチメント分析、マクロ経済指標など、様々なデータセットが用意されています。
+全部で50以上もあるデータセットの詳細は、Quantopianの `data
+page <https://www.quantopian.com/data>`__ で確認できます。
 
-Our goal in this tutorial will be to build an algorithm that selects and
-trades assets based on sentiment data, so let’s take a look at
-PsychSignal’s `StockTwits Trader
+このチュートリアルの最終目的を、センチメントデータを使って株式を選び出し、取引することにしましょう。
+よって今回は、PsychSignalの `StockTwits Trader
 Mood <https://www.quantopian.com/data/psychsignal/stocktwits>`__
-dataset. PsychSignal’s dataset assigns bull and bear scores to stocks
-each day based on the aggregate sentiment from messages posted on
-Stocktwits, a financial communications platform.
+データセットを見てみましょう。
+PsychSignalのデータセットは、金融SNSプラットフォームであるStocktwitsに投稿されたメッセージの総体的なセンチメントに基づいて、毎日銘柄にブル（強気）とベア（弱気）のスコアを割り当てています。
 
-We can start by inspecting the message volume and sentiment score (bull
-minus bear) columns from the ``stocktwits`` dataset. We will query the
-data using Quantopian’s Pipeline API, which is a powerful tool you will
-use over and over again to access and analyze data in Research. You will
-learn a lot more about the Pipeline API in the next lesson and a `later
-tutorial <https://www.quantopian.com/tutorials/pipeline>`__. For now all
-you need to know is that the following code uses a data pipeline to
-query ``stocktwits`` and returns data, and plots the results for AAPL:
+
+ではまず、``stocktwits`` データセットのメッセージの総量とセンチメントスコア（ブルからベアを引いたもの）の列を見ていきましょう。データを照会するには、Quantopianの Pipeline APIを使います。 Pipeline APIは、今後 Research でデータを照会したり分析したりする時に何度も使うことになります。詳しくは次のレッスンや、`Pipeline専用のチュートリアル <https://www.quantopian.com/tutorials/pipeline>`__ で学ぶことができます。今のところ知っておく必要があるのは、以下のコードがデータPipelineを使用して ``stocktwits`` を照会してデータを返し、AAPLの結果をプロットしているということだけです。
+
 
 .. code:: ipython2
 
@@ -86,7 +71,7 @@ query ``stocktwits`` and returns data, and plots the results for AAPL:
     from quantopian.pipeline.factors import Returns
     from quantopian.pipeline.data.psychsignal import stocktwits
     
-    # Pipeline definition
+    # Pipeline 定義
     def make_pipeline():
     
         returns = Returns(window_length=2)
@@ -101,20 +86,20 @@ query ``stocktwits`` and returns data, and plots the results for AAPL:
             },
         )
     
-    # Pipeline execution
+    # Pipeline 実行
     data_output = run_pipeline(
         make_pipeline(),
         start_date=period_start,
         end_date=period_end
     )
     
-    # Filter results for AAPL
+    # AAPLのデータだけを取得
     aapl_output = data_output.xs(
         symbols('AAPL'),
         level=1
     )
     
-    # Plot results for AAPL
+    # 描画
     aapl_output.plot(subplots=True);
 
 
@@ -122,12 +107,7 @@ query ``stocktwits`` and returns data, and plots the results for AAPL:
 .. image:: notebook_files/notebook_5_0.png
 
 
-When exploring a dataset, try to look for patterns that might serve as
-the basis for a trading strategy. For example, the above plot shows some
-matching spikes between daily returns and ``stocktwits`` message volume,
-and in some cases the direction of the spikes in returns match the
-direction of AAPL’s sentiment score. This looks interesting enough that
-we should conduct more rigorous statistical tests to confirm our
-hypotheses.
+データセットを探索する時は、パターンを探して見て下さい。そのパターンが、取引ストラテジーの基礎になるかもしれません。たとえば、上の例でいえば、日々とリターン（収益）のスパイク（急激な変化）と``stocktwits`` のメッセージ総量のスパイクが、いくつかマッチしていることを示していますし、いくつかのケースではリターンのスパイクととAAPLのセンチメントスコアの方向がマッチしているのも確認できます。これは十分おもしろそうなので、より厳密な統計的テストを行い、この仮設を説明してみましょう。
 
-In the next lesson we will cover the Pipeline API in more depth.
+次のレッスンでは、Pipeline APIについて詳しく説明します。
+
