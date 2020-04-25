@@ -8,5 +8,11 @@ Getting Started
    :maxdepth: 2
    :caption: Contents:
 
-   Getting_Started_Tutorial-Lesson_1
-   Getting_Started_Tutorial-Lesson_2
+   1_getting_started_lesson1
+   1_getting_started_lesson2
+   1_getting_started_lesson3
+   1_getting_started_lesson4
+   1_getting_started_lesson5
+   1_getting_started_lesson6
+   1_getting_started_lesson7
+   1_getting_started_lesson8
