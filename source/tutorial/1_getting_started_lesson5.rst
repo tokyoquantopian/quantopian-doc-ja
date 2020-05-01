@@ -1,57 +1,67 @@
-In the previous lesson we created a data pipeline that selects assets to consider for our portfolio, and calculates alpha scores for those assets. The remaining lessons will be conducted in Quantopian's `Interactive Development Environment (IDE) <https://www.quantopian.com/algorithms>`__ where we will build a trading algorithm, attach our data pipeline to it, and use alpha scores for portfolio construction. Then, we will analyze our algorithm's performance under more realistic conditions by simulating it over historical data. This type of historical simulation is commonly known as "backtesting."
+前回のレッスンでは、ポートフォリオに考慮すべき資産を選択し、その資産のアルファスコアを計算する data pipeline を作成しました。 残りのレッスンでは、 Quantopian の `Interactive Development Environment (IDE) <https://www.quantopian.com/algorithms>`__ を使って、取引アルゴリズムを作成します。 そこで、 data pipeline を使って、アルファスコアを算出しポートフォリオを構築していきます。次に、過去データを用いてシミュレーションを行い、より現実的な条件下でのアルゴリズムのパフォーマンスを分析します。このようなヒストリカルシミュレーションは一般的に、 "backtesting"として知られています。
+
 
 Algorithm API & Core Functions
 ------------------------------
 
-The next step will be to build a basic structure for our trading algorithm using Quantopian's Algorithm API. The Algorithm API provides functions that facilitate order scheduling and execution, and allow us to initialize and manage parameters in our algorithms.
-Let's take a look at some of the core functions we will use in our algorithm:
+次のステップでは、 Quantopian の Algorithm API を使用しながら、取引アルゴリズムの基本構造を構築しましょう。 Algorithm API は、注文のスケジュールや実行を簡単に行う事ができる機能や、アルゴリズムのパラメータを初期化したり管理したりする機能を提供しています。ここでは、アルゴリズムで使用する主要な関数をいくつか紹介します。
 
 
 **initialize(context)**
 
-``initialize`` is called exactly once when our algorithm starts running and requires ``context`` as input. Any parameter initialization and one-time startup logic should go here.
-``context`` is an augmented Python `dictionary <https://docs.python.org/2/tutorial/datastructures.html#dictionaries>`__ used for maintaining state throughout the simulation process, and can be referenced in different parts of our algorithm. Any variables that we want to persist between function calls should be stored in ``context`` instead of using global variables. Context variables can be accessed and initialized using dot notation (``context.some_attribute``).
+アルゴリズムの実行を開始するときに ``initialize`` は一度だけ呼ばれます。その時必ず入力として ``context`` を渡さなくてはいけません。
+パラメータの初期化や一回限りの起動ロジックはすべてここ ``initialize`` で行う必要があります。
+``context`` は Pythonの `dictionary <https://docs.python.org/2/tutorial/datastructures.html#dictionaries>`__ を拡張したもので、シミュレーションの過程で状態を維持するために使われ、アルゴリズムのどの時点においても参照することができます。よって、関数呼び出しの間に持続させたい変数はグローバル変数ではなく ``context`` に保存しておきましょう。 ``context`` 変数はドット（ 例： ``context.some_attribute`` ）でアクセスして初期化することができます。
 
+.. note:: 訳者注
+
+    翻訳をしながら、この部分は相談したい、と思ったところなどを、どのようにメモしたらいいか、相談する。ここでは、
+    「シミュレーションの過程で状態を維持するために使われ、アルゴリズムのどの時点においても参照することができます」の説明は別途必要ではないか？ということを相談したい。
 
 **before_trading_start(context, data)**
 
-``before_trading_start`` is called once per day before the market opens and requires ``context`` and ``data`` as input. ``context`` is a reference to the same dictionary from ``initialize``, and data is an object that stores several API functions that allow us to look up current or historical pricing and volume data for any asset.
-before_trading_start is also where we get our pipeline's output, and do any pre-processing of the resulting data before using it for portfolio construction. We will cover this in the next lesson.
+``before_trading_start`` はマーケットが開く前に1日1回だけ呼び出され、入力として ``context`` と ``data`` を必要とします。
+``context`` は ``initialize`` で使った辞書と同じものです。  ``data`` は複数のAPI関数を格納しているオブジェクトです。その関数を使って、任意の資産の現在または過去の価格や数量のデータを調べることができます。
+``before_trading_start`` では、 pipeline の出力結果を取得する場所でもあります。また、結果として得られたデータをポートフォリオ構築に使用する前に前処理も行います。これについては次のレッスンで説明します。
 
-``before_trading_start`` is also where we get our pipeline's output, and do any pre-processing of the resulting data before using it for portfolio construction. We will cover this in the next lesson.
 
 **schedule_function(func, day_rule, time_rule)**
 
-On Quantopian, algorithms can trade equities between 9:30AM-4PM Eastern Time on regular trading days, following the `NYSE trading calendar <https://www.nyse.com/markets/hours-calendars>`__ . ``schedule_function`` allows us to execute custom functions at specified dates and times. For example, we can schedule a function to rebalance our portfolio at market open on the first day of each week as follows:
+Quantopian では、アルゴリズムは、 `ニューヨーク証券取引所の取引カレンダー <https://www.nyse.com/markets/hours-calendars>`__ に沿って、午前9時30分から午後4時までの間、株式を取引することができます。
+``schedule_function`` を使うと、指定した日時にユーザーがカスタマイズした関数を実行することができます。例えば、毎週最初の営業日のマーケットオープン時に、ポートフォリオのリバランスを行う関数は、以下のようにスケジュールすることができます。
 
 .. code:: python3
 
     schedule_function(
-        rebalance,
+        rebalance, ## ユーザーがカスタマイズした関数名
         date_rule=date_rules.week_start(),
         time_rule=time_rules.market_open()
     )
 
+スケジューリング関数は ``initialize`` の中で記述する必要があります。その時渡されるユーザーがカスタマイズした関数は、必ず ``context`` と ``data`` を引数に取る必要があります。利用可能な ``date_rules`` と ``time_rules`` を使ってどのようにスケジューリングすることができるかは `documentation <https://www.quantopian.com/docs/api-reference/algorithm-api-reference#quantopian.algorithm.schedule_function>`__ を参照してください。
 
-Scheduling functions should be done in ``initialize``, and custom functions scheduled with this method need to take ``context`` and ``data`` as arguments. For a full list of ``date_rules`` and ``time_rules`` available, check out the `documentation <https://www.quantopian.com/docs/api-reference/algorithm-api-reference#quantopian.algorithm.schedule_function>`__.
+次に、取引アルゴリズムの基本構造を作ってみましょう。下記のアルゴリズムは、シミュレーションで経過した日数を記録し、日付と時間に応じて異なるメッセージをログに出力しているだけです。この後のレッスンで、 data pipeline と、取引ロジックをこの基本構造に追加していきます。
+"Clone" ボタンをクリックすると、IDEにコピーが作成され、アルゴリズム実行することが出来ます。
 
+.. note:: 訳者注
+    `Quantopian のドキュメント <https://www.quantopian.com/tutorials/getting-started#lesson5>`__ では、上記のように clone ボタンがありますが、翻訳ページにはありません。よって、 Quantopianにログイン後、本翻訳の原作ページ `https://www.quantopian.com/tutorials/getting-started#lesson5 <https://www.quantopian.com/tutorials/getting-started#lesson5>`__ で、 ``Clone`` ボタンを押してコードをクローンして下さい。
 
-Next, let's build a skeleton for our trading algorithm. For now we will have our algorithm keep track of the number of days that have passed in the simulation and log different messages depending on the date and time. In the next couple of lessons we will integrate our data pipeline and add trading logic.
-To run this example algorithm, create a copy by clicking the "Clone" button. Once you are in the IDE, run a backtest by clicking "Build Algorithm" (top left) or "Run Full Backtest" (top right).
+IDEに入ったら、"Build Algorithm" (左上) または "Run Full Backtest" (右上)をクリックしてバックテストを実行します。
+
 
 .. code:: python3
 
-    # Import Algorithm API
+    # Algorithm API をインポート
     import quantopian.algorithm as algo
 
 
     def initialize(context):
-        # Initialize algorithm parameters
+        # アルゴリズムパラメータを初期化
         context.day_count = 0
         context.daily_message = "Day {}."
         context.weekly_message = "Time to place some trades!"
 
-        # Schedule rebalance function
+        # rebalance 関数をスケジューリング
         algo.schedule_function(
             rebalance,
             date_rule=algo.date_rules.week_start(),
@@ -60,15 +70,14 @@ To run this example algorithm, create a copy by clicking the "Clone" button. Onc
 
 
     def before_trading_start(context, data):
-        # Execute any daily actions that need to happen
-        # before the start of a trading session
+        # 毎日、トレード時間が始まる前に必ず実行する
         context.day_count += 1
         log.info(context.daily_message, context.day_count)
 
 
     def rebalance(context, data):
-        # Execute rebalance logic
+        # リバランスのロジックを実行する
         log.info(context.weekly_message)
 
-Now that we have a basic structure for a trading algorithm, let's add the data pipeline we created in the previous lesson to our algorithm.
 
+取引アルゴリズムの基本的な構造ができたので、前回のレッスンで作成したデータパイプラインをアルゴリズムに追加してみましょう。
