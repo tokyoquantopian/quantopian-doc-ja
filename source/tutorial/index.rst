@@ -19,3 +19,4 @@ Pipeline
    :caption: Contents:
 
    2_pipeline_lesson1
+   2_pipeline_lesson2
