@@ -1,15 +1,17 @@
 Pipeline API
 ------------
 
-Pipeline APIは、以下のような横断的に資産データ分析を行うための強力なツールです。複数のデータをにたいして一連の演算を行い、一度に大量の資産を分析します。いくつかの一般的なPipeline API の用途としては、以下のようなものがあります。
+Pipeline APIは、横断的に資産データ分析を行うための強力なツールです。
+複数のデータをにたいして一連の演算を行い、一度に大量の資産を分析します。
+いくつかの一般的なPipeline API の用途としては、以下のようなものがあります。
 
 - フィルタリングルールに基づいた資産の選択
 - スコアリング関数に基づく資産のランク付け
-- ポートフォリオの配分を計算する
+- ポートフォリオの配分の計算
 
-まず、Pipelineクラスをインポートして、空の pipeline を返す関数を作成します。
-関数のなかで pipeline を定義しておくと、 複雑な処理を行う場合でも、整った方法で定義をおこなうことが出来ます。
-これは、特に Research から pipeline の定義を IDE に移行する時に便利です。
+まず、Pipelineクラスをインポートして、空のpipelineを返す関数を作成します。
+関数のなかでpipelineを定義しておくと、複雑な処理を、整った方法で定義することが出来ます。
+この定義方法は、pipelineの定義をResearchからIDEに移行する時に、とても役立つ方法です。
 
 .. code:: ipython2
 
@@ -20,13 +22,7 @@ Pipeline APIは、以下のような横断的に資産データ分析を行う�
         # 空の Pipeline を作成し返す。
         return Pipeline()
 
-To add an output to our pipeline we need to include a reference to a
-dataset, and specify the computations we want to carry out on that data.
-For example, we will add a reference to the ``close`` column from the
-``USEquityPricing`` dataset. Then, we can define our output to be the
-latest value from this column as follows:
-
-pipeline にデータ出力を追加するには、データセットに参照を追加し、そのデータに対して行いたい演算を定義します。
+pipelineにデータ出力を追加するには、データセットに参照を追加し、そのデータに対して行いたい演算を定義します。
 例えば、``USEquityPricing`` データセットから ``close`` 列への参照を追加し、日々の最新の値を出力するように定義するにはこのように記述します。
 
 
@@ -47,12 +43,9 @@ pipeline にデータ出力を追加するには、データセットに参照�
             }
         )
 
-The Pipeline API also provides a number of built-in calculations, some
-of which are computed over trailing windows of data. For example, the
-following code imports Psychsignal’s ``stocktwits`` dataset and defines
-an output as the 3 day moving average of its ``bull_minus_bear`` column:
-
-Pipeline API では、組み込み計算機能が多数提供されています。一定期間を移動しながら計算する演算機能なども機能として提供されています。たとえば、Psychsignalの ``stocktwits`` データセットで提供されている、  ``bull_minus_bear`` データを使って3日移動平均を出力するコードは以下のように定義できます。
+Pipeline APIでは、組み込み計算機能が多数提供されています。
+一定期間を移動しながら計算する演算機能なども提供されています。
+たとえば、Psychsignalの ``stocktwits`` データセットで提供されている、 ``bull_minus_bear`` データの3日移動平均を出力するコードは以下のように定義できます。
 
 .. code:: ipython2
 
@@ -83,14 +76,18 @@ Pipeline API では、組み込み計算機能が多数提供されています�
             }
         )
 
-Universe Selection
-~~~~~~~~~~~~~~~~~~
+評価対象となる資産を選ぶ
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-戦略開発の重要な部分は、資産のセットを定義することです。つまり、複数の銘柄からなるポートフォリオをつくって、取引することを考えることです。この資産セットのことを、トレーディング・ユニバース（trading universe）と呼びます。
+戦略開発の重要な部分は、資産のセットを定義することです。
+つまり、複数の銘柄からなるポートフォリオをつくって、取引することを考えます。
+この資産セットのことを、トレーディング・ユニバース（trading universe）と呼びます。
 
-トレーディング・ユニバースは可能な限り大きくなければなりません。しかし同時、不必要な資産を排除する必要もあります。
-例えば、流動性の低い銘柄や、取引困難な銘柄などは取り除きたいでしょう。
-Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色をすでに持つユニバースです。よって、 pipeline のスクリーニングパラメータを使って、 ``QTradableStocksUS`` を私達のトレーディング・ユニバースに設定してみましょう。
+トレーディング・ユニバースは可能な限り大きくなければなりません。
+しかし同時、不必要な資産を排除する必要もあります。
+例えば、流動性の低い銘柄や、取引困難な銘柄などは取り除きたいと思うでしょう。
+Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色をすでに持つユニバースです。
+ではpipelineのスクリーニングパラメータを使って、 ``QTradableStocksUS`` を私達のトレーディング・ユニバースとして設定しましょう。
 
 
 .. code:: ipython2
@@ -129,7 +126,9 @@ Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色�
             screen=base_universe
         )
 
-これで pipeline の定義は完了しました。次に、``run_pipeline`` をつかって指定した期間で pipeline を実行してみましょう。出力結果は、 pandas の DataFrame で、日付と資産名が index に持ちます。列は、 pipeline で定義したカラムです。
+これでpipelineの定義は完了しました。次に、``run_pipeline`` をつかって指定した期間でpipelineを実行してみましょう。
+出力結果は、pandasのDataFrameで、日付と資産名をindexに持ちます。
+列は、 pipelineで定義したカラムです。
 
 .. code:: ipython2
 
@@ -145,8 +144,6 @@ Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色�
     
     # 最初の10行を表示
     pipeline_output.tail(10)
-
-
 
 
 .. raw:: html
@@ -219,4 +216,5 @@ Quantopianの ``QTradableStocksUS`` ユニバースは、このような特色�
 
 
 
-次のレッスンでは、取引する資産を選択するためにアルゴリズムが使用する戦略を整えます。その後、過去のデータに対する戦略の予測力を評価するために、ファクター分析ツールを使ってみます。
+次のレッスンでは、取引する資産を選択するためにアルゴリズムが使用する戦略を整えます。
+その後、ファクター分析ツールを使って過去のデータに対する戦略の予測力を評価をします。
