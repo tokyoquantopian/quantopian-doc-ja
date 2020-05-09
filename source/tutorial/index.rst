@@ -24,4 +24,4 @@ Pipeline
    2_pipeline_lesson4
    2_pipeline_lesson5
    2_pipeline_lesson6
- 
+   2_pipeline_lesson7
