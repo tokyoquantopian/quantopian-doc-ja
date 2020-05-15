@@ -15,8 +15,7 @@ Quantopianへようこそ。この入門チュートリアルでは、Quantopian
 
 取引アルゴリズムを書くために最初にすることは、戦略のベースとなる経済的または統計的な関係を見つけることです。
 QuantopianのResearch環境を使って、利用できる過去データセットにアクセスし、分析を行うことができます。
-Research は `Jupyter
-Notebook <http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__ 環境で提供されており、Pythonのコードを 'セル' と呼ばれる場所で実行することができます。
+Research は `Jupyter Notebook <http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__ 環境で提供されており、Pythonのコードを 'セル' と呼ばれる場所で実行することができます。
 
 例えば、以下のコードは、Apple Inc. (AAPL)の毎日の終値と20日と50日移動平均線をプロットしています。
 
@@ -63,4 +62,3 @@ Shift+Enterキーを押してセルを実行します。
 ではさっそく次のレッスンで、Researchを使ってQuantopianのデータセットをさわってみましょう。
 さらに、取引戦略を定義し、過去のデータに基づいてリターンを効果的に予測できるかどうかを検証してみます。
 最後に、その結果をもとに、インタラクティブ開発環境（IDE）で取引アルゴリズムを開発し、テストを行ってみましょう。
-
