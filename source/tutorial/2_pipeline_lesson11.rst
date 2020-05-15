@@ -180,25 +180,25 @@ QTradableStocksUSに関するより詳細な銘柄選定基準は、`ここ <htt
 
     def make_pipeline():
         
-        # Base universe filter.
+        # ベースとなるユニバース
         base_universe = QTradableStocksUS()
         
-        # 10-day close price average.
+        # 10日間の終値移動平均
         mean_10 = SimpleMovingAverage(inputs=[USEquityPricing.close], window_length=10, mask=base_universe)
     
-        # 30-day close price average.
+        # 30日間の終値移動平均
         mean_30 = SimpleMovingAverage(inputs=[USEquityPricing.close], window_length=30, mask=base_universe)
     
-        # Percent difference factor.
+        # 変化率ファクタ
         percent_difference = (mean_10 - mean_30) / mean_30
         
-        # Create a filter to select securities to short.
+        # 空売り銘柄を選択するフィルタ
         shorts = percent_difference.top(75)
     
-        # Create a filter to select securities to long.
+        # 購入銘柄を選択するフィルタ
         longs = percent_difference.bottom(75)
         
-        # Filter for the securities that we want to trade.
+        # 売買を行う銘柄を選択するフィルタ
         securities_to_trade = (shorts | longs)
         
         return Pipeline(
