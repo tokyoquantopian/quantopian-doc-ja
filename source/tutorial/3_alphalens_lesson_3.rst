@@ -1,91 +1,88 @@
-Companion notebook for Alphalens tutorial lesson 3
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Interpreting Alphalens Tear Sheets
+.. note:: 
+
+    本Tutorialのコードは、`ドキュメント原作ページ <https://www.quantopian.com/tutorials/alphalens#lesson3>`__ にある ``Get Notebook`` ボタンでクローン出来ます。
+
+
+Alphalensティアシートを読み解く
 ==================================
 
-In the previous lesson, you learned how to query and process data so
-that we can analyze it with Alphalens tear sheets. In this lesson, you
-will experience a few iterations of the alpha discovery phase of the
-`quant
-workflow <https://blog.quantopian.com/a-professional-quant-equity-workflow/>`__
-by analyzing those tear sheets.
+前回のレッスンでは、Alphalensのティアシートを使ってデータを分析できるように、データを取得して処理する方法を学びました。
 
-In this lesson, we will:
+このレッスンでは、`quant workflow <https://blog.quantopian.com/a-professional-quant-equity-workflow/>`__ のアルファ発見フェーズのいくつかの反復を、ティアシートを分析することで体験していただきます。
+このレッスンでは、ティアシートを分析しながらアルファファクターを探す一連の流れをクォントワークフローに沿って経験していきましょう。
 
-1. Analyze how well an alpha factor predicts future price movements with
-   ``create_information_tear_sheet()``.
-2. Try to improve our original alpha factor by combining it with another
-   alpha factor.
-3. Preview how profitable our alpha factor might be with
-   ``create_returns_tear_sheet()``.
+このような順で行います：
 
-Our Starting Alpha Factor
-~~~~~~~~~~~~~~~~~~~~~~~~~
+1. ``create_information_tear_sheet()`` を使って、各アルファファクターがどのくらい適切に将来価格を予測しているかを分析
+2. 他のアルファファクターを組み合わせて、自分のアルファファクターを改善
+3. ``create_returns_tear_sheet()`` を使って、自分のアルファファクターの収益性を測る。
 
-The following code expresses an alpha factor based on a company’s net
-income and market cap, then creates an information tear sheet for that
-alpha factor. We will start analyzing the alpha factor by looking at
-it’s information coefficient (IC). The IC is a number ranging from -1,
-to 1, which quantifies the predictiveness of an alpha factor. Any number
-above 0 is considered somewhat predictive.
 
-The first number you should look at is the IC mean, which is an alpha
-factor’s average IC over a given time period. You want your factor’s IC
-Mean to be as high as possible. Generally speaking, a factor is worth
-investigating if it has an IC mean over 0. If it has an IC mean close to
-.1 (or higher) over a large trading universe, that factor is probably
-**exceptionally good**. In fact, you might want to check to make sure
-there isn’t some lookahead bias if your alpha factor’s IC mean is over
-.1
+はじめてのアルファファクター
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+次のコードは、企業の純利益と時価総額からアルファファクターを表現し、そのアルファファクターの情報ティアシート(information tear sheet)を作成します。
 
-**Run the cell below to create an information tear sheet for our alpha
-factor. Notice how the IC Mean figures (the first numbers on the first
-chart) are all positive. That is a good sign!**
+まずはアルファファクターの情報係数 (IC) から分析していきます。
+ICは、-1から1までの数値で、アルファファクターがどの程度予測できるか定量化するための数値です。
+0以上の数値は、予測可能性がやや高いと考えられます。
+
+最初に見るべき数値はICの平均値です。これは与えられた期間におけるアルファファクターの平均ICです。
+ファクターのIC平均はできるだけ高いほうがよいです。多くの場合、ファクター平均が0以上であればそのファクターをさらに調査する価値があります。もし大きな取引ユニバースにおいて、IC平均が0.1あたり（もしくはそれ以上）の場合、そのファクターはおそらくとても良いものと言えるでしょう。
+
 
 .. code:: ipython3
 
     from quantopian.pipeline.data import factset
+
     from quantopian.pipeline import Pipeline
     from quantopian.research import run_pipeline
     from quantopian.pipeline.factors import CustomFactor, SimpleMovingAverage
     from quantopian.pipeline.filters import QTradableStocksUS
     from alphalens.tears import create_information_tear_sheet
     from alphalens.utils import get_clean_factor_and_forward_returns
-    
-    
+
+
     def make_pipeline():
-        
-        # 1 year moving average of year over year net income
+
+        # 年次の企業収益を、1年間の移動平均で取得
         net_income_moving_average = SimpleMovingAverage( 
-            inputs=[factset.Fundamentals.net_inc_af], 
-            window_length=252
+        inputs=[factset.Fundamentals.net_inc_af], 
+        window_length=252
         )
-        
-        # 1 year moving average of market cap
+
+        # 時価総額を1年間の移動平均で取得
         market_cap_moving_average = SimpleMovingAverage( 
-            inputs=[factset.Fundamentals.mkt_val], 
-            window_length=252
+        inputs=[factset.Fundamentals.mkt_val], 
+        window_length=252
         )
-        
+
         average_market_cap_per_net_income = (market_cap_moving_average / net_income_moving_average)
-        
-        # the last quarter's net income
+
+        # 直近四半期の企業収益を取得
         net_income = factset.Fundamentals.net_inc_qf.latest 
-        
+
         projected_market_cap = average_market_cap_per_net_income * net_income
-        
+
         return Pipeline(
-            columns = {'projected_market_cap': projected_market_cap},
-            screen = QTradableStocksUS() & projected_market_cap.notnull()
+        columns={'projected_market_cap': projected_market_cap},
+        screen=QTradableStocksUS() & projected_market_cap.notnull()
         )
-    
-    
-    pipeline_output = run_pipeline(make_pipeline(), '2010-1-1', '2012-1-1')
-    pricing_data = get_pricing(pipeline_output.index.levels[1], '2010-1-1', '2012-2-1', fields='open_price')
-    factor_data = get_clean_factor_and_forward_returns(pipeline_output, pricing_data)
-    
-    create_information_tear_sheet(factor_data)
+
+
+    factor_data = run_pipeline(make_pipeline(), '2010-1-1', '2012-1-1')
+    pricing_data = get_pricing(factor_data.index.levels[1], '2010-1-1', '2012-2-1', fields='open_price')
+    merged_data = get_clean_factor_and_forward_returns(factor_data, pricing_data)
+
+    create_information_tear_sheet(merged_data)
+
+Below is the first chart produced by create_information_tear_sheet(). Notice how the IC Mean figures are all positive. That is a good sign!
+
+``create_information_tear_sheet()`` で作成された最初のチャートが出来ました。IC平均値がすべて正の値であることに注目してください。これは良い兆候です。
+
+.. image:: notebook_files/alphalens_l3_screenshot1.png
+
+
 
 Add Another Alpha Factor
 ~~~~~~~~~~~~~~~~~~~~~~~~
