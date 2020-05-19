@@ -45,13 +45,13 @@ ICは、-1から1までの数値で、アルファファクターがどの程度
 
     def make_pipeline():
 
-        # 年次の企業収益を、1年間の移動平均で取得
+        # 年次の企業収益を、過去1年間の移動平均で取得
         net_income_moving_average = SimpleMovingAverage( 
         inputs=[factset.Fundamentals.net_inc_af], 
         window_length=252
         )
 
-        # 時価総額を1年間の移動平均で取得
+        # 時価総額を過去1年間の移動平均で取得
         market_cap_moving_average = SimpleMovingAverage( 
         inputs=[factset.Fundamentals.mkt_val], 
         window_length=252
@@ -76,7 +76,6 @@ ICは、-1から1までの数値で、アルファファクターがどの程度
 
     create_information_tear_sheet(merged_data)
 
-Below is the first chart produced by create_information_tear_sheet(). Notice how the IC Mean figures are all positive. That is a good sign!
 
 ``create_information_tear_sheet()`` で作成された最初のチャートが出来ました。IC平均値がすべて正の値であることに注目してください。これは良い兆候です。
 
@@ -84,103 +83,87 @@ Below is the first chart produced by create_information_tear_sheet(). Notice how
 
 
 
-Add Another Alpha Factor
-~~~~~~~~~~~~~~~~~~~~~~~~
+他のアルファファクターを追加
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Alphalens is useful for identifying alpha factors that aren’t
-predictive early in the quant workflow. This allows you to avoid wasting
-time running a full backtest on a factor that could have been discarded
-earlier in the process.**
+**Alphalensを使うとクオンツワークフローの早い段階で、将来価格を予測出来そうにないアルファファクターを特定できます。早い段階で不要なファクターを捨てることで、フルバックテストでの時間のムダにを避ける事が出来ます。**
 
-Run the following cell to express another alpha factor called
-``price_to_book``, combine it with ``projected_market_cap`` using
-zscores and winsorization, then creates another information tearsheet
-based on our new (and hopefully improved) alpha factor.
-
-Notice how the IC figures are lower than they were in the first chart.
-That means the factor we added is making our predictions worse!
+次のコードで、``price_to_book`` という新しいアルファファクターを追加しました。
+そのファクターに、``projected_market_cap`` と名付けたファクターを `z値 <https://ja.wikipedia.org/wiki/%E6%A8%99%E6%BA%96%E5%BE%97%E7%82%B9#Z%E5%BE%97%E7%82%B9>`__ や `外れ値処理 <https://en.wikipedia.org/wiki/Winsorizing>`__ をしながら組み合わせ、（願わくは改良された）アルファファクター( ``factor_to_analyze`` )に更新しました。最終的にそのファクターの情報ティアシートを作成しています。
 
 .. code:: ipython3
 
     def make_pipeline():
-    
-        net_income_moving_average = SimpleMovingAverage( # 1 year moving average of year over year net income
+
+        # 1年次の企業収益を、過去1年間の移動平均で取得
+        net_income_moving_average = SimpleMovingAverage( 
             inputs=[factset.Fundamentals.net_inc_af], 
             window_length=252
         )
-        
-        market_cap_moving_average = SimpleMovingAverage( # 1 year moving average of market cap
+
+        # 時価総額を過去1年間の移動平均で取得
+        market_cap_moving_average = SimpleMovingAverage( 
             inputs=[factset.Fundamentals.mkt_val], 
             window_length=252
         )
-        
-        average_market_cap_per_net_income = (market_cap_moving_average / net_income_moving_average)
-        
-        net_income = factset.Fundamentals.net_inc_qf.latest # the last quarter's net income
-        
-        projected_market_cap = average_market_cap_per_net_income * net_income
-        
-        price_to_book = factset.Fundamentals.pbk_qf.latest
-        
-        factor_to_analyze = projected_market_cap.zscore() + price_to_book.zscore()
-        
-        return Pipeline(
-            columns = {'factor_to_analyze': factor_to_analyze},
-            screen = QTradableStocksUS() & factor_to_analyze.notnull()
-        )
-    
-    
-    
-    pipeline_output = run_pipeline(make_pipeline(), '2010-1-1', '2012-1-1')
-    pricing_data = get_pricing(pipeline_output.index.levels[1], '2010-1-1', '2012-2-1', fields='open_price')
-    new_factor_data = get_clean_factor_and_forward_returns(pipeline_output, pricing_data)
-    
-    create_information_tear_sheet(new_factor_data)
 
-See If Our Alpha Factor Might Be Profitable
+        average_market_cap_per_net_income = (market_cap_moving_average / net_income_moving_average)
+
+        net_income = factset.Fundamentals.net_inc_qf.latest # 直近四半期の企業収益を取得
+
+        projected_market_cap = average_market_cap_per_net_income * net_income
+
+        price_to_book = factset.Fundamentals.pbk_qf.latest # アルファファクターを追加
+
+        factor_to_analyze = projected_market_cap.zscore() + price_to_book.zscore()
+
+        return Pipeline(
+            columns={'factor_to_analyze': factor_to_analyze},
+            screen=QTradableStocksUS() & factor_to_analyze.notnull()
+        )
+
+    factor_data = run_pipeline(make_pipeline(), '2010-1-1', '2012-1-1')
+    pricing_data = get_pricing(factor_data.index.levels[1], '2010-1-1', '2012-2-1', fields='open_price')
+    new_merged_data = get_clean_factor_and_forward_returns(factor_data, pricing_data)
+
+    create_information_tear_sheet(new_merged_data)
+
+ICの数値が最初のチャートよりも低くなっています。これは、私たちが追加した要因が私たちの予測を悪化させていることを意味しています。
+
+.. image:: notebook_files/alphalens_l3_screenshot2.png
+
+
+アルファファクターが利益をもたらすか確認
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We found that the first iteration of our alpha factor had more
-predictive value than the second one. Let’s see if the original alpha
-factor might make any money.
+最初のアルファファクターの試みのほうが、二番目よりも予測値が高い事がわかりました。では、最初あのアルファファクターを使えば収益が上がるか見てみましょう。
 
-``create_returns_tear_sheet()`` splits your universe into quantiles,
-then shows the returns generated by each quantile over different time
-periods. Quantile 1 is the 20% of assets with the lowest alpha factor
-values, and quantile 5 is the highest 20%.
+``create_returns_tear_sheet()`` を使うと、取引ユニバースをクォンタイルに分割しそれぞれのクォンタイルよって生成された収益を異なる期間に渡って表示します。分位点 1 はアルファファクターの値が最下位20％の資産群であり、分位点 5 は最高位20%の資産群です。
 
-This function creates six types of charts, but the two most important
-ones are:
+この機能は6種類のチャートを作成しますが、最も重要なのはこの2つです。
 
--  **Mean period-wise returns by factor quantile:** This chart shows the
-   average return for each quantile in your universe, per time period.
-   You want the quantiles on the right to have higher average returns
-   than the quantiles on the left.
--  **Cumulative return by quantile:** This chart shows you how each
-   quantile performed over time. You want to see quantile 1 consistently
-   performing the worst, quantile 5 consistently performing the best,
-   and the other quantiles in the middle.
+- **Mean Period Wise Return by Factor Quantile (分位点ごとの期間ごとの平均リターン)**：このチャートは、あなたのユニバース内の各分位点の期間ごとの平均リターンを示しています。右側の分位数が左側の分位数よりも平均リターンが高くなるようにします。
 
-**Run the following cell, and notice how quantile 5 doesn’t have the
-highest returns. Ideally, you want quantile 1 to have the lowest
-returns, and quantile 5 to have the highest returns. This tear sheet is
-telling us we still have work to do!**
+.. image:: notebook_files/alphalens_l3_screenshot3.png
+
+- **Cumulative return by quantile (分位点ごとの累積収益)**：このチャートは、各分位の収益が時間の経過とともにどのように推移したかを示しています。分位点1が一貫して最悪のパフォーマンスを示し、分位点5が一貫して最高のパフォーマンスを示し、その他の分位点が中央にあるが望ましいです。
+
+
+.. image:: notebook_files/alphalens_l3_screenshot4.png
+
+
+下記のコードがティアシートを作成します。
 
 .. code:: ipython3
 
     from alphalens.tears import create_returns_tear_sheet
-    
-    create_returns_tear_sheet(factor_data)
 
-In this lesson, you experienced a few cycles of the alpha discovery
-stage of the quant worfklow. Making good alpha factors isn’t easy, but
-Alphalens allows you to iterate through them quickly to find out if
-you’re on the right track! You can usually improve existing alpha
-factors in some way by getting creative with moving averages, looking
-for trend reversals, or any number of other stratgies.
+    create_returns_tear_sheet(merged_data)
 
-Try looking around `Quantopian’s
-forums <https://www.quantopian.com/posts>`__, or reading academic papers
-for inspiration. **This is where you get to be creative!** In the next
-lesson, we’ll discuss advanced Alphalens concepts.
 
+Cumulative return by quantile をみるとで、分位点5は最も高い収益ではないということがわかります。理想的には、分位点1が最も低い収益を、分位点5が最も高い収益を持つようにしたいです。
+また、分位点間に明らかな交差が見られます。理想的には、累積収益同士は交差してほしくはありません。このティアーシートは、私たちにまだやるべきことがあることを教えてくれています。
+
+このレッスンでは、クオンツワークフローにそってアルファファクターを見つけるためのサイクルを体験しました。良いアルファファクターを作るのは簡単なことではありませんが、Alphalensを使えば、正しい軌道に乗っているかどうかを見極めるために、素早く施策を繰り返すことができます。既存のアルファファクターを改善するのは、移動平均やトレンドの反転を探したりとあらゆる方法で創造的に行うことができます。
+
+`Quantopianのフォーラム <https://www.quantopian.com/posts>`__ を見たり、学術論文を読んだりして、インスピレーションを得てみてください。**ここから創造力が身につきます**。次のレッスンでは、アルファレンズの高度な概念について説明します。
