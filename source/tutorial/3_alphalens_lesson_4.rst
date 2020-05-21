@@ -1,28 +1,19 @@
-Companion notebook for Alphalens tutorial lesson 4
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Advanced Alphalens concepts
 ===========================
 
-You’ve learned the basics of using Alphalens. This lesson explores the
-following advanced Alphalens concepts:
+You've learned the basics of using Alphalens. This lesson explores the following advanced Alphalens concepts:
+Alphalensの基本的な使い方を学びました。このレッスンでは、より高度な Alphalensの概念を学びます。
 
-1. Determining how far an alpha factor’s decay rate.
-2. Dealing with a common Alphalens error named MaxLossExceededError.
-3. Grouping assets by sector, then analyzing each sector individually.
-4. Writing group neutral strategies.
+1. Determining how far an alpha factor's predictive value stretches into the future.アルファファクターがどのくらい長く将来を予測できるか見極める
+2. Dealing with a common Alphalens error named MaxLossExceededError. ``MaxLossExceededError``という Alphalensのエラーに対応する
+3. Grouping assets by sector, then analyzing each sector individually. セクターごとに資産をグループにまとめ、各セクターを分析。
+4. Writing group neutral strategies.どのグループにも偏らないストラテジーを考える
 
-**All sections of this lesson will use the data produced by the Pipeline
-created in the following cell. Please run it.**
+The following code creates an alpha factor in a pipeline. The rest of this lesson will discuss advanced Alphalens concepts using the data created by the pipeline.
+次のコードは、パイプラインでアルファファクターを作成します。このレッスンでは、パイプラインが算出する、より高度なアルファレンズの概念を学んでいきましょう。
 
-**Important note**: Until this lesson, we passed the output of
-``run_pipeline()`` to ``get_clean_factor_and_forward_returns()`` without
-any changes. This was possible because the previous lessons’ Pipelines
-only returned one column. This lesson’s Pipeline returns two columns,
-which means we need to *specify the column* we’re passing as factor
-data. Look for commented code near
-``get_clean_factor_and_forward_returns()`` in the following cell to see
-how to do this.
+**重要な注意**：
+これまでのレッスンでは、``get_clean_factor_and_forward_returns()`` に何の変更も加えずに、 ``run_pipeline()`` の出力結果を渡していました。これは、パイプラインが返す結果が１つのカラムだけだったからです。このレッスンではパイプラインは２つのカラムを持つ結果を返すので、ファクターデータのカラムを指定する必要があります。指定方法は、下記のコードの ``get_clean_factor_and_forward_returns()`` の中でコメントを見て下さい。
 
 .. code:: ipython3
 
@@ -32,8 +23,8 @@ how to do this.
     from quantopian.pipeline.filters import QTradableStocksUS
     from quantopian.pipeline.classifiers.fundamentals import Sector
     from alphalens.utils import get_clean_factor_and_forward_returns
-    
-    
+
+
     def make_pipeline():
         
         change_in_working_capital = factset.Fundamentals.wkcap_chg_qf.latest
@@ -41,11 +32,11 @@ how to do this.
         
         sales_per_working_capital = factset.Fundamentals.sales_wkcap_qf.latest
         spwc_processed = sales_per_working_capital.winsorize(.2, .98).zscore()
-    
+
         factor_to_analyze = (ciwc_processed + spwc_processed).zscore()
-    
+
         sector = Sector()
-    
+
         return Pipeline(
             columns = {
                 'factor_to_analyze': factor_to_analyze,
@@ -57,34 +48,62 @@ how to do this.
                 & sector.notnull()
             )
         )
-    
-    
+
+
     pipeline_output = run_pipeline(make_pipeline(), '2013-1-1', '2014-1-1')
     pricing_data = get_pricing(pipeline_output.index.levels[1], '2013-1-1', '2014-3-1', fields='open_price')
-    
-    
+
+
     factor_data = get_clean_factor_and_forward_returns(
-        pipeline_output['factor_to_analyze'], # How to analyze a specific pipeline column with Alphalens
+        pipeline_output['factor_to_analyze'], # パイプラインの出力結果のどのコラムをAlphalensに分析させるか指定
         pricing_data, 
         periods=range(1,32,3)
     )
 
-Analyzing Alpha Factors By Group
---------------------------------
 
-Alphalens allows you to group assets using a classifier. A common use
-case for this is creating a classifier that specifies which sector each
-equity belongs to, then comparing your alpha factor’s returns among
-sectors.
+Visualizing an alpha factor's decay rate
+------------------------------------------
 
-You can group assets by any classifier, but sector is most common. The
-Pipeline in the first cell of this lesson returns a column named
-``sector``, whose values represent the corresponding Morningstar sector
-code. All we have to do now is pass that column to the ``groupby``
-argument of ``get_clean_factor_and_forward_returns()``
+A lot of fundamental data only comes out 4 times a year in quarterly reports. Because of this low frequency, it can be useful to increase the amount of time get_clean_factor_and_forward_returns() looks into the future to calculate returns.
+多くのファンダメンタルデータは、年4回の四半期レポートでしか出てきません。頻度が低いので、
 
-**Run the following cell, and notice the charts at the bottom of the
-tear sheet showing how our factor performs in different sectors.**
+Tip: A month usually has 21 trading days, a quarter usually has 63 trading days, and a year usually has 252 trading days.
+**ヒント**：1ヶ月の取引日は通常21日、四半期はは通常63日、1年は通常252日です。
+
+たとえば、利益を上げ続けている会社の株式を買うという戦略を立てたとしましょう（データは６３日取引日ごとにリリースされます）。
+利益を上げ続けているというファクターをみて、あなたは今後１０日間だけを株式保有期間として分析するでしょうか？たぶん違うでしょう。もっと長い期間を想定するはずです。しかし、どのくらい先の期間を考えるべきでしょうか？
+
+**次のコードは、アルファファクターの平均ICを描画します。**
+
+.. code:: ipython3
+
+    from alphalens.performance import mean_information_coefficient
+    mean_information_coefficient(factor_data).plot(title="IC Decay");
+
+0を下回ったポイントが、アルファファクターの予測が有用ではなくなった時を表現しています。
+
+.. image:: notebook_files/alphalens_l4_screenshot1.png
+
+
+What do you think the chart will look like if we calculate the IC a full year into the future?
+1年先のICを計算すると、チャートはどうなると思いますか？
+
+*メモ*: This is a setup for section two of this lesson.
+
+.. code:: ipython3
+
+    factor_data = get_clean_factor_and_forward_returns(
+        pipeline_output['factor_to_analyze'], 
+        pricing_data,
+        periods=range(1,252,20) # この第三引数は、The third argument to the range statement changes the "step" of the range
+    )
+
+    mean_information_coefficient(factor_data).plot()
+
+Running the code above would produce the following error:
+
+
+
 
 .. code:: ipython3
 
