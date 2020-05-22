@@ -32,6 +32,11 @@ user_[ユーザレビュー範囲を示すブランチ]
 
 .. _vcs-workflow:
 
+コミットルール
+------------
+- コミットは1つの目的の単位で行う（e.g. 新規追加と既存のリファクタリングを1つのコミットで行ったりするのは避ける）
+- コミットメッセージは、ここ [#commit]_ のライト版に従う
+
 作業の流れ
 --------
 1〜4に 役割 [#role]_ を分けて作業を進める。但し、各作業フェーズに特化しない全体的な課題はIssueを作成して解決する。
@@ -76,6 +81,7 @@ user_[ユーザレビュー範囲を示すブランチ]
 
 .. rubric:: 脚注
 
+.. [#commit] https://qiita.com/itosho/items/9565c6ad2ffc24c09364
 .. [#role] https://github.com/tokyoquantopian/quantopian-doc-ja/wiki/%E5%BD%B9%E5%89%B2%E5%88%86%E6%8B%85
 .. [#translation] https://github.com/tokyoquantopian/quantopian-doc-ja/wiki/%E7%BF%BB%E8%A8%B3%E8%80%85%E4%BD%9C%E6%A5%AD%E3%83%A1%E3%83%A2
 
