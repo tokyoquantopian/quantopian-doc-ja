@@ -10,6 +10,7 @@
    :maxdepth: 2
    :caption: Contents:
 
+   vcs
    toctree
    rst
    text
