@@ -1,21 +1,32 @@
-Advanced Alphalens concepts
-===========================
+一歩進んだAlphalensの概念と使い方
+===================================
 
-You've learned the basics of using Alphalens. This lesson explores the following advanced Alphalens concepts:
-Alphalensの基本的な使い方を学びました。このレッスンでは、より高度な Alphalensの概念を学びます。
+.. note:: 
 
-1. Determining how far an alpha factor's predictive value stretches into the future.アルファファクターがどのくらい長く将来を予測できるか見極める
-2. Dealing with a common Alphalens error named MaxLossExceededError. ``MaxLossExceededError``という Alphalensのエラーに対応する
-3. Grouping assets by sector, then analyzing each sector individually. セクターごとに資産をグループにまとめ、各セクターを分析。
-4. Writing group neutral strategies.どのグループにも偏らないストラテジーを考える
+    ここでのTutorialのコードは、`ドキュメント原作ページ <https://www.quantopian.com/tutorials/alphalens#lesson4>`__ にある ``Get Notebook`` ボタンでクローン出来ます。
 
-The following code creates an alpha factor in a pipeline. The rest of this lesson will discuss advanced Alphalens concepts using the data created by the pipeline.
-次のコードは、パイプラインでアルファファクターを作成します。このレッスンでは、パイプラインが算出する、より高度なアルファレンズの概念を学んでいきましょう。
+    また  ``Get Notebook`` でクローンできるコードは、このチュートリアルの完成版です。以下のチュートリアルでは説明の為に意図的にエラーを出すコードや説明の為に一部変数を変えたコードが記されていますのご注意下さい。
+
+これまでのレッスンでは、Alphalensの基本的な使い方を学びました。
+次のレッスンでは、以下のような、高度なAlphalensの概念や使い方を学びます。
+
+1. アルファファクターがどのくらい先の将来を予測できるか見極める
+2. Alphalensのエラーである ``MaxLossExceededError`` とは何か、またそれにどう対処すべきか
+3. 資産を業種ごとのグループにまとめ、各業種を分析する
+4. 上記の分析をもとに、どのグループにも偏らないストラテジーを書く
+
+次のコードは、パイプラインでアルファファクターを作成するコードです。このパイプラインのデータを使ってAlphalensの高度な概念を学んでいきましょう。
 
 **重要な注意**：
-これまでのレッスンでは、``get_clean_factor_and_forward_returns()`` に何の変更も加えずに、 ``run_pipeline()`` の出力結果を渡していました。これは、パイプラインが返す結果が１つのカラムだけだったからです。このレッスンではパイプラインは２つのカラムを持つ結果を返すので、ファクターデータのカラムを指定する必要があります。指定方法は、下記のコードの ``get_clean_factor_and_forward_returns()`` の中でコメントを見て下さい。
+これまでのレッスンでは、``run_pipeline()`` が返すパイプラインの出力結果をそのまま ``get_clean_factor_and_forward_returns()`` に渡していました。というのも、パイプラインが返す結果が１つのカラムだけだったからです。下記のコードは、カラムを２つ返します。（ ``factor_to_analyze`` と ``sector`` ）。したがってファクターデータはどのカラムかをAlphalensに伝える必要があります。詳しくは下記のコードの ``get_clean_factor_and_forward_returns()`` のコメントを確認して下さい。
 
-.. code:: ipython3
+.. note:: 
+
+    説明を明確にするため、下記のプログラムに ``base_code`` と名付けます。原作ではそのような表現はありません。
+
+
+.. code:: python
+   :caption: base_code
 
     from quantopian.pipeline import Pipeline
     from quantopian.pipeline.data import factset
@@ -55,194 +66,211 @@ The following code creates an alpha factor in a pipeline. The rest of this lesso
 
 
     factor_data = get_clean_factor_and_forward_returns(
-        pipeline_output['factor_to_analyze'], # パイプラインの出力結果のどのコラムをAlphalensに分析させるか指定
+        pipeline_output['factor_to_analyze'], # パイプラインのどのコラムをAlphalensに分析させるか指定
         pricing_data, 
-        periods=range(1,32,3)
+        periods=range(1,32,3) # 下記 factor_data の出力結果を参照
     )
+
+``get_clean_factor_and_forward_returns`` についての詳しい説明はAPI Doc [#get_clean_factor_and_forward_returns]_ を参照して下さい。
+
+``pipeline_output`` の出力結果
+
+.. image:: notebook_files/alphalens_l4_screenshot102.jpg
+
+
+``pricing_data`` の出力結果
+
+.. image:: notebook_files/alphalens_l4_screenshot101.jpg
+
+``factor_data`` の出力結果
+
+.. image:: notebook_files/alphalens_l4_screenshot100.jpg
+
+`periods=range(1,32,3)` というオプションを渡したので、各銘柄の今日から31日後までの3日おきに、銘柄の収益率がいくらだったかを算出。同時にその時の ``factor`` 値と ``factor_quantile`` も同列に配置されている。
+
+
+
 
 
 Visualizing an alpha factor's decay rate
 ------------------------------------------
 
-A lot of fundamental data only comes out 4 times a year in quarterly reports. Because of this low frequency, it can be useful to increase the amount of time get_clean_factor_and_forward_returns() looks into the future to calculate returns.
-多くのファンダメンタルデータは、年4回の四半期レポートでしか出てきません。頻度が低いので、
+多くのファンダメンタルデータは、年4回の四半期レポートでしか取得出来ません。頻度が低いのでなるべくたくさんのファンダメンタルデータを ``get_clean_factor_and_forward_returns()`` に渡したほうが将来を見通すためには有用です。
 
-Tip: A month usually has 21 trading days, a quarter usually has 63 trading days, and a year usually has 252 trading days.
-**ヒント**：1ヶ月の取引日は通常21日、四半期はは通常63日、1年は通常252日です。
+**メモ**：1ヶ月の取引日は通常21日、四半期は63日、1年は252日です。
 
 たとえば、利益を上げ続けている会社の株式を買うという戦略を立てたとしましょう（データは６３日取引日ごとにリリースされます）。
-利益を上げ続けているというファクターをみて、あなたは今後１０日間だけを株式保有期間として分析するでしょうか？たぶん違うでしょう。もっと長い期間を想定するはずです。しかし、どのくらい先の期間を考えるべきでしょうか？
+利益を上げ続けているというファクター（＝私達のアルファファクター）をみて、あなたは今後１０日間だけを株式保有期間として分析するでしょうか？たぶん違うでしょう。もっと長い期間を想定するはずです。しかし、どのくらい先の期間を考えるべきでしょうか？
 
-**次のコードは、アルファファクターの平均ICを描画します。**
+上記で得られた ``factor_data`` を使って、私達のアルファファクターの情報係数（information coefficient,IC）の平均値を時系列で見てみましょう。
 
-.. code:: ipython3
+
+.. note:: 
+
+    下記のコードは ``Get Notebook`` でクローンした notebook の中には記述されていません。試したい場合は任意の場所にセルを追加しコピーペーストして実行して下さい。
+
+.. code:: python
 
     from alphalens.performance import mean_information_coefficient
     mean_information_coefficient(factor_data).plot(title="IC Decay");
 
-0を下回ったポイントが、アルファファクターの予測が有用ではなくなった時を表現しています。
+このチャートは、ポイントが0を下回った時アルファファクターの予測が有用ではなくなったことを表現しています。
 
 .. image:: notebook_files/alphalens_l4_screenshot1.png
 
 
-What do you think the chart will look like if we calculate the IC a full year into the future?
-1年先のICを計算すると、チャートはどうなると思いますか？
+この例は約一ヶ月のチャートですが、1年先のICを計算するとチャートはどのような線を描くでしょうか？やってみましょう。
 
-*メモ*: This is a setup for section two of this lesson.
+.. code:: python
+   :caption: base_code
 
-.. code:: ipython3
+    # 一部省略
 
     factor_data = get_clean_factor_and_forward_returns(
         pipeline_output['factor_to_analyze'], 
         pricing_data,
-        periods=range(1,252,20) # この第三引数は、The third argument to the range statement changes the "step" of the range
+        periods=range(1,252,20) # 1日〜252日、20日ごとに収益率を確認。range()関数の3番目の引数は頻度
     )
 
     mean_information_coefficient(factor_data).plot()
 
-Running the code above would produce the following error:
+このコードを実行すると下記のようなエラーが出ると思います。次章ではこのErrorに対応していきます。
+
+.. image:: notebook_files/alphalens_l4_screenshot2.png
 
 
+MaxLossExceededErrorを対処
+----------------------------------
+
+さて ``What does MaxLossExceededError: max_loss (35.0%) exceeded 88.4%, consider increasing it.`` はどういう意味でしょう？
+
+上記 ``factor_data`` の出力結果でも確認しましたが、``get_clean_factor_and_forward_returns()`` の返り値は、将来の収益率とアルファファクターの値を一列に並べたデータです。その収益率は、``get_pricing()`` の返り値を使って計算しています。
+つまり、``pricing_data`` は、ファクターデータより将来の値を保持しておかなくてはいけないし、少なくとも、``get_clean_factor_and_forward_returns()`` の ``periods=`` で指定した期間分長めに指定しておく必要があります。ここの例でいうと、``get_pricing()`` の ``end_date`` は、 ``run_pipeline()`` の ``end_date`` よりも少なくとも一年（＝252日）分将来の日付を指定する必要があります。
+
+では、それに従ってコードを修正してみましょう。
+
+.. code:: python 
+   :caption: base_code
+
+    # 一部省略
+
+    pipeline_output = run_pipeline(
+        make_pipeline(),
+        start_date='2013-1-1', 
+        end_date='2014-1-1' #  ファクターデータは2014-1-1まで
+    )
+
+    pricing_data = get_pricing(
+        pipeline_output.index.levels[1], 
+        start_date='2013-1-1',
+        end_date='2015-2-1', # pricing data は 2014-1-1の252日先である2015-1-1＋アルファまで。252日＋アルファしておくと間違いない。
+        fields='open_price'
+    )
+
+    factor_data = get_clean_factor_and_forward_returns(
+        pipeline_output['factor_to_analyze'], 
+        pricing_data,
+        periods=range(1,252,20) # 10日以下の頻度を指定すると時間がかかるので注意。
+    )
+
+    mean_information_coefficient(factor_data).plot()
+
+これでエラーなく一年先まで IC を見ることが出来ました。
+すると、私達のアルファファクターは、評価後すぐに減衰していきますが、そのあと6ヶ月もかからない間に強く伸びていくことがわかりました。これは面白い発見ですね。
+
+.. image:: notebook_files/alphalens_l4_screenshot3.png
+
+Note: MaxLossExceededError has two possible causes; forward returns computation and binning. We showed you how to fix forward returns computation here because it is much more common. You can read more about what binning is in the API docs.
+
+*メモ*： ``MaxLossExceededError`` の発生には以下2つの理由が考えられます。1つは将来の収益に関する計算時のエラー、もう一つはビン分割時のエラーです。 ここでは出現しやすい1つめに関してのみ説明しました。2つめのビン分割に関しては、API doc を確認して下さい。
 
 
-.. code:: ipython3
+アルファファクターをグループで分析
+------------------------------------
 
+Alphalensでは、分類器を使って資産をグループ化することが出来ます。頻繁に行われるグループ化のケースは、各資産を業種別にグループ化することです。そうすることで各業種においてアルファファクターが生み出す収益を比べることが出来ます。
+
+もちろん他の分類器を使っても構いませんが、業種は最もよく使われる分類です。base_code に記述した、パイプラインの ``sector`` [#sector]_ と名付けられたコラムに、Morningstar のセクターコードが返ります。このコラムを ``get_clean_factor_and_forward_returns()`` のオプション引数である ``groupby`` に渡せばグループ化できます。
+
+下記のようにコードを変更します。
+
+.. code:: python 
+   :caption: base_code
+
+    # 追加
     from alphalens.tears import create_returns_tear_sheet
-    
+
     sector_labels, sector_labels[-1] = dict(Sector.SECTOR_NAMES), "Unknown"
-    
+
+    # 一部省略
+
     factor_data = get_clean_factor_and_forward_returns(
         factor=pipeline_output['factor_to_analyze'],
         prices=pricing_data,
         groupby=pipeline_output['sector'],
-        groupby_labels=sector_labels,
+        groupby_labels=sector_labels, 
     )
-    
+
     create_returns_tear_sheet(factor_data=factor_data, by_group=True)
 
-Writing Group Neutral Strategies
---------------------------------
+ファクターが業種ごとにグループ化されると、各業種で私達のファクターがどのように機能するかを示すチャートがティアシートの下の方に表示されます。
 
-Not only does Alphalens allow us to simulate how our alpha factor would
-perform in a long/short trading strategy, it also allows us to simulate
-how it would do if we went long/short on every group!
+.. figure:: notebook_files/alphalens_l4_screenshot4.png
+   
+   業種ごとのアルファファクター
+   
 
-Grouping by sector, and going long/short on each sector allows you to
-limit exposure to the overall movement of sectors. For example, you may
-have noticed in step three of this tutorial, that certain sectors had
-all positive returns, or all negative returns. That information isn’t
-useful to us, because that just means the sector group outperformed (or
-underperformed) the market; it doesn’t give us any insight into how our
-factor performs within that sector.
 
-Since we grouped our assets by sector in the previous cell, going group
-neutral is easy; just make the two following changes: - Pass
-``binning_by_group=True`` as an argument to
-``get_clean_factor_and_forward_returns()``. - Pass
-``group_neutral=True`` as an argument to ``create_full_tear_sheet()``.
 
-**The following cell has made the approriate changes. Try running it and
-notice how the results differ from the previous cell.**
+特定のグループに偏らないストラテジーを書く
+-------------------------------------------
 
-.. code:: ipython3
+アルファレンズでは、私たちのアルファファクターがロングショート取引戦略でどのように機能するかをシミュレートできるだけでなく、各グループそれぞれでロング/ショートを行った場合、どのようにアルファファクターが機能するかも見ることが出来ます。
+
+業種ごとにグループ化し各業種でロング/ショートを行うことで、業種の全体的な動きへのエクスポージャーを制限することができます。たとえば、上図の業種ごとのアルファファクターを見ると、ある業種がすべての分位でプラスの収益を、またほかの業種ではすべての分位でマイナスの収益をもたらしていることに気づいたかもしれません。
+
+この情報はその業種グループが市場をアウトパフォームした（またはアンダーパフォームした）ことを意味するだけで、その業種内で私達のファクターがどのように機能するかについては何の洞察も与えてくれません。
+
+すでに業種でグループ化しているので、以下の変更を加えれば、特定のグループに依存しないように変更することが出来ます。
+
+
+1. ``get_clean_factor_and_forward_returns()`` に ``binning_by_group=True`` オプションを渡す
+2. ``create_full_tear_sheet()`` に ``group_neutral=True`` オプションを渡す
+3. 実際の変更は次のコードの通りです。実行して前回の結果と比べて見て下さい。
+
+
+.. code:: python
+   :caption: base_code
+
+    # 一部省略
 
     factor_data = get_clean_factor_and_forward_returns(
         pipeline_output['factor_to_analyze'],
         prices=pricing_data,
         groupby=pipeline_output['sector'],
-        groupby_labels=sector_labels,
-        binning_by_group=True,
+        groupby_labels=sector_labels, # 追加
+        binning_by_group=True, # 追加
     )
-    
+
     create_returns_tear_sheet(factor_data, by_group=True, group_neutral=True)
 
-Visualizing An Alpha Factor’s Decay Rate
-----------------------------------------
 
-A lot of fundamental data only comes out 4 times a year in quarterly
-reports. Because of this low frequency, it can be useful to increase the
-amount of time ``get_clean_factor_and_forward_returns()`` looks into the
-future to calculate returns.
 
-**Tip:** A month usually has 21 trading days, a quarter usually has 63
-trading days, and a year usually has 252 trading days.
+ご覧のように、グループニュートラル（特定の業種に偏らないこと）にすると　結果が異なります。このようにグループニュートラルで分析を行うことで、私達のアルファファクターの振る舞いがなぜ特定の振る舞いをするのか、といった事に関して具体的な観察を得ることもあります。
 
-Let’s say you’re creating a strategy that buys stock in companies with
-rising profits (data that is released every 63 trading days). Would you
-only look 10 days into the future to analyze that factor? Probably not!
-But how do you decide how far to look forward?
 
-**Run the following cell to chart our alpha factor’s IC mean over time.
-The point where the line dips below 0 represents when our alpha factor’s
-predictions stop being useful.**
+.. figure:: notebook_files/alphalens_l4_screenshot5.png
+   
+   種ごとのアルファファクター
 
-.. code:: ipython3
 
-    from alphalens.performance import mean_information_coefficient
-    mean_information_coefficient(factor_data).plot(title="IC Decay");
+お疲れ様でした！
 
-What do you think the chart will look like if we calculate the IC a full
-year into the future?
+このチュートリアルで学んだテクニックは、良いアルファファクターを特定するのに役立つでしょう。Lesson5 のテンプレートを使ってアルファファクターをいくつか作成し、IDEに実装してQuantopianコンテストにぜひ応募してみてください。
 
-*Hint*: This is a setup for section two of this lesson.
 
-.. code:: ipython3
 
-    factor_data = get_clean_factor_and_forward_returns(
-        pipeline_output['factor_to_analyze'], 
-        pricing_data,
-        periods=range(1,252,20) # The third argument to the range statement changes the "step" of the range
-    )
-    
-    mean_information_coefficient(factor_data).plot()
+.. rubric:: 脚注
 
-Dealing With MaxLossExceededError
----------------------------------
-
-Oh no! What does ``MaxLossExceededError`` mean?
-
-``get_clean_factor_and_forward_returns()`` looks at how alpha factor
-data affects pricing data *in the future*. This means we need our
-pricing data to go further into the future than our alpha factor data
-**by at least as long as our forward looking period.**
-
-In this case, we’ll change ``get_pricing()``\ ’s ``end_date`` to be at
-least a year after ``run_pipeline()``\ ’s ``end_date``.
-
-**Run the following cell to make those changes. As you can see, this
-alpha factor’s IC decays quickly after a quarter, but comes back even
-stronger six months into the future. Interesting!**
-
-.. code:: ipython3
-
-    pipeline_output = run_pipeline(
-        make_pipeline(),
-        start_date='2013-1-1', 
-        end_date='2014-1-1' #  *** NOTE *** Our factor data ends in 2014
-    )
-    
-    pricing_data = get_pricing(
-        pipeline_output.index.levels[1], 
-        start_date='2013-1-1',
-        end_date='2015-2-1', # *** NOTE *** Our pricing data ends in 2015
-        fields='open_price'
-    )
-    
-    factor_data = get_clean_factor_and_forward_returns(
-        pipeline_output['factor_to_analyze'], 
-        pricing_data,
-        periods=range(1,252,20) # Change the step to 10 or more for long look forward periods to save time
-    )
-    
-    mean_information_coefficient(factor_data).plot()
-
-*Note: MaxLossExceededError has two possible causes; forward returns
-computation and binning. We showed you how to fix forward returns
-computation here because it is much more common. Try passing
-``quantiles=None`` and ``bins=5`` if you get MaxLossExceededError
-because of binning.*
-
-That’s it! This tutorial got you started with Alphalens, but there’s so
-much more to it. Check out our `API
-docs <http://quantopian.github.io/alphalens/>`__ to see the rest!
-
+.. [#get_clean_factor_and_forward_returns] https://www.quantopian.com/docs/api-reference/alphalens-api-reference#alphalens.utils.get_clean_factor_and_forward_returns
+.. [#sector] https://www.quantopian.com/docs/api-reference/pipeline-api-reference#quantopian.pipeline.classifiers.morningstar.Sector
