@@ -1,3 +1,9 @@
+
+.. note::
+
+    2020/06/07 更新。
+    本翻訳は、２０２０年５月以前に公開されていた **旧Tutorial１ Getting Started** です。翻訳作業中に原作が大きく更新され、この翻訳は原作側には存在しません。しかしながら、記載されている内容やスクリプトは現在も使用可能ですので、日本語翻訳サイトには引き続き掲載します。
+
 Quantopianへようこそ。この入門チュートリアルでは、Quantopianでのクオンツトレーディング戦略の研究と開発について説明します。
 このチュートリアルでは、Quantopian APIの基本的な機能を多く取り上げており、Quantopianを初めて利用する方を対象にしています。
 チュートリアルを始めるために必要なのは、基本的な `Python <https://docs.python.org/2.7/>`__ のプログラミングスキルだけです。
@@ -50,15 +56,11 @@ Research は `Jupyter Notebook <http://jupyter-notebook-beginner-guide.readthedo
         title='AAPL Close Price / SMA Crossover'
     );
 
-上記のコードを使用するには、Researchで新しいノートブックを開き、コピーアンドペーストするか、このレッスンの右上にある「Get Notebook」ボタンをクリックします。
-各セルはShift+Enterキーを押すと実行されます。
+.. 上記のコードは、Research環境で新しいノートブックを開いて、セルにコピーアンドペーストするか、このレッスンの画面の右上にある「Get Notebook」ボタンをクリックすることで利用できます。そして、このコードのあるセルを選択してShift+Enterキーを押せばセルを実行でき、次のような出力がなされます。
 
-.. note::
+上記のコードは、Research環境で新しいノートブックを開いて、セルにコピーアンドペーストすることで利用できます。そして、このコードのあるセルを選択してShift+Enterキーを押せばセルを実行でき、次のような出力がなされます。
 
-    Get Notebookボタンは、`Quantopianウェブサイト <https://www.quantopian.com/tutorials/getting-started#lesson1>`__ にあります。
-
-上記のコードを実行すると、以下のようなチャートが出力されます。
-
+.. Get Notebookボタンは、`Quantopianウェブサイト <https://www.quantopian.com/tutorials/getting-started#lesson1>`__ にあります。
 
 .. image:: notebook_files/notebook_5_0.png
 
