@@ -1,9 +1,8 @@
-Lessons2-4はResearch環境で行われます。
-Researchのセットアップを行うには新しいノートブックを作成するか、下の「Get Notebook」をクリックしてこのレッスンのノートブックのクローンを作成してください。
+レッスン2から4は、Research環境で行います。
 
-.. note::
+Research環境を利用するときには、`新しいノートブックを作成 <https://www.quantopian.com/notebooks>`__ して下さい。
 
-    Get Notebookボタンは、`Quantopianウェブサイト <https://www.quantopian.com/tutorials/getting-started#lesson2>`__ にあります。
+..    Get Notebookボタンは、`Quantopianウェブサイト <https://www.quantopian.com/tutorials/getting-started#lesson2>`__ にあります。
 
 
 データを探す
@@ -13,7 +12,9 @@ Researchは、価格、出来高、およびリターンを照会するための
 データは、2002年から今日現在までの8000株以上の米国株式データです。
 関数は、資産（または資産のリスト）、開始日、終了日を引数として受け取り、日付をindexに持つ、pandasの `Series <http://pandas.pydata.org/pandas-docs/version/0.18/generated/pandas.Series.html>`__ （もしくは `DataFrame <http://pandas.pydata.org/pandas-docs/version/0.18/generated/pandas.DataFrame.html>`__)を返します。
 
-取得したい日付を定義して、AAPLのリターンを ``returns`` 関数を使って照会してみましょう。
+ここで、期間を指定して、AAPLのリターンを ``returns`` 関数を使って照会してみましょう。
+
+
 
 .. code:: ipython2
 
@@ -54,17 +55,15 @@ Researchは、価格、出来高、およびリターンを照会するための
 さまざまなデータ
 ~~~~~~~~~~~~~~~~~
 
-Quantopianには、価格データと数量データに加えて、企業のファンダメンタルズ、センチメント分析、マクロ経済指標など様々なデータセットが用意されています。
-全部で50以上あるデータセットの詳細は、Quantopianの `Data Reference <https://www.quantopian.com/docs/data-reference/overview>`__ で確認できます。
+Quantopianには、価格や出来高のデータだけでなく、企業のファンダメンタルズやセンチメント分析、マクロ経済指標など様々なデータセットが用意されています。データセットは、全部で50以上用意されており、詳細については、`Quantopianの Data Reference <https://www.quantopian.com/docs/data-reference/overview>`__ で確認できます。
 
-このチュートリアルの最終目的を、センチメントデータを使って株式を選び出し、取引することにしましょう。
-よって今回は、PsychSignalの `StockTwits Trader Mood <https://www.quantopian.com/data/psychsignal/stocktwits>`__ データセットを使います。
-PsychSignalのデータセットは、金融SNSプラットフォームであるStocktwitsに投稿されたメッセージの総体的なセンチメントに基づいて、毎日銘柄にブル（強気）とベア（弱気）のスコアを割り当てています。
+このチュートリアルでは、センチメントデータを使って株式を選び、取引を評価するところまで扱います。
+今回は、センチメントデータとして、PsychSignalの `StockTwits Trader Mood <https://www.quantopian.com/data/psychsignal/stocktwits>`__ データセットを使います。このPsychSignalのデータセットは、Stocktwitsという株式専門SNSに投稿されたメッセージの総体的なセンチメントに基づいて、日次で銘柄ごとにブル（強気）とベア（弱気）のスコアを割り当てたものです。
 
 
 ではまず、``stocktwits`` データセットのメッセージの総量とセンチメントスコア（ブルからベアを引いたもの）の列を見ていきましょう。
 データを照会するには、QuantopianのPipeline APIを使います。
-Pipeline APIは、今後Researchでデータを照会したり分析したりする時に何度も使うことになります。
+Pipeline APIは、今後Research環境でデータを照会したり分析したりする時に何度も使うことになります。
 詳しくは次のレッスンや、`Pipeline専用のチュートリアル <https://www.quantopian.com/tutorials/pipeline>`__ で学ぶことができます。
 今のところ知っておく必要があるのは、以下のコードがdata pipelineを使用して ``stocktwits`` を照会してデータを返し、AAPLの結果をプロットしているということだけです。
 
@@ -113,10 +112,9 @@ Pipeline APIは、今後Researchでデータを照会したり分析したりす
 .. image:: notebook_files/notebook_5_1.png
 
 
-データセットを探索する時は、パターンを探して見てください。
-そのパターンが、取引ストラテジーの基礎になるかもしれません。
-たとえば、上の例でいえば、日々とリターン（収益）のスパイク（急激な変化）と ``stocktwits`` のメッセージ総量のスパイクが、いくつかマッチしていることを示していますし、いくつかのケースではリターンのスパイクととAAPLのセンチメントスコアの方向がマッチしているのも確認できます。
-これは十分おもしろそうなので、より厳密な統計的テストを行い、この仮設を説明してみましょう。
+データセットの中味を検討するときには、データセットと株価の動きを見比べて、何かパターンがないか探して見てください。そうして見つけたパターンが、取引ストラテジーの基礎になるかもしれません。
+上記の例では、株価の日々のリターン（収益）のスパイク（急激な変化）と ``stocktwits`` のメッセージ総量のスパイクが、いくつか同じタイミングで起きていることが見て取れますし、リターンのスパイクとAAPLのセンチメントスコアの方向がマッチしている様子もいくつか確認できます。
+こうして見ると、充分に使えそうな面白いデータセットのようですので、さらにしっかりと統計的に分析して、うまく行くかどうか検証してみましょう。
 
 次のレッスンでは、Pipeline APIについて詳しく説明します。
 
