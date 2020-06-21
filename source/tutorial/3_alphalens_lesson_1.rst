@@ -1,6 +1,7 @@
-
 Alphalens
 ===========
+
+原作： https://www.quantopian.com/tutorials/alphalens
 
 Alphalensチュートリアルへようこそ。このチュートリアルは、すでにあなたがすでに `Getting Started <https://www.quantopian.com/tutorials/getting-started>`__ と `Pipeline API <https://www.quantopian.com/tutorials/pipeline>`__ を完了していることを前提にしています。
 

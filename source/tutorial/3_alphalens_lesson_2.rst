@@ -1,6 +1,9 @@
 Alphalensで tear sheets を作成
 ===================================
 
+原作 : https://www.quantopian.com/tutorials/alphalens#lesson2
+
+
 .. note:: 
 
     本Tutorialのコードは、`ドキュメント原作ページ <https://www.quantopian.com/tutorials/alphalens#lesson2>`__ にある ``Get Notebook`` ボタンでクローン出来ます。
