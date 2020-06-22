@@ -12,14 +12,14 @@ Alphalensティアシートを読み解く
 
 前回のレッスンでは、Alphalensのティアシートを使ってデータを分析できるように、データを取得して処理する方法を学びました。
 
-このレッスンでは、 `quant workflow <https://blog.quantopian.com/a-professional-quant-equity-workflow/>`__ のアルファ発見フェーズのいくつかの反復を、ティアシートを分析することで体験していただきます。
-このレッスンでは、ティアシートを分析しながらアルファファクターを探す一連の流れをクォントワークフローに沿って経験していきましょう。
+このレッスンでは、ティアシートを分析しながらアルファファクターを探す一連の流れを `quant workflow <https://blog.quantopian.com/a-professional-quant-equity-workflow/>`__ に沿って経験していきましょう。
 
-このような順で行います：
+このようなステップで行います：
 
 1. ``create_information_tear_sheet()`` を使って、各アルファファクターがどのくらい適切に将来価格を予測しているかを分析
 2. ほかのアルファファクターを組み合わせて、自分のアルファファクターを改善
 3. ``create_returns_tear_sheet()`` を使って、自分のアルファファクターの収益性を測る。
+
 
 
 はじめてのアルファファクター

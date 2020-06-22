@@ -182,8 +182,6 @@ MaxLossExceededErrorを対処
 
 .. image:: notebook_files/alphalens_l4_screenshot3.png
 
-Note: MaxLossExceededError has two possible causes; forward returns computation and binning. We showed you how to fix forward returns computation here because it is much more common. You can read more about what binning is in the API docs.
-
 *メモ*： ``MaxLossExceededError`` の発生には以下2つの理由が考えられます。1つは将来の収益に関する計算時のエラー、もう1つはビン分割時のエラーです。 ここでは出現しやすい1つめに関してのみ説明しました。2つめのビン分割に関しては、API doc を確認して下さい。
 
 
