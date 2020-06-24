@@ -48,7 +48,7 @@ Pipelineを構築、実行する
 
 .. image:: notebook_files/alphalens_l2_screenshot1.png
 
-Query Pricing Data
+価格データの取得
 ------------------
 
 ファクターデータを取得したので、次に同じ期間の価格データを取得してみましょう。 
@@ -67,7 +67,7 @@ Execute the following cell to get pricing data.
     symbols=factor_data.index.levels[1], # ファクターデータを取得したすべての資産
     start_date='2014-1-1',
     end_date='2016-2-1', # end_date は、run_pipeline() で実行した最終日よりも後の日を指定。詳しくはlesson 4
-    fields='open_price' # だいたいにおいて始値を使う.詳しくは lesson 4
+    fields='open_price' # 通常、始値を使うのが望ましいです。詳しくは lesson 4
     )
 
     # 最初の5行を表示
@@ -80,8 +80,8 @@ Execute the following cell to get pricing data.
 
 
 
-Align Data
-----------
+データの配列
+-------------
 
 ``get_clean_factor_and_forward_returns()`` は、``run_pipeline()`` で作成したファクターデータと ``get_pricing()`` で取得した価格データを配列しなおして、Alphalensの可視化関数が分析しやすいデータオブジェクトを返します。
 必須引数は2つです。
@@ -106,7 +106,7 @@ Align Data
 .. image:: notebook_files/alphalens_l2_screenshot3.png
 
 
-結果を可視化
+結果の可視化
 -----------------
 
 最後に、``create_full_tear_sheet()`` に ``get_clean_factor_and_forward_returns()`` の出力結果を渡します。

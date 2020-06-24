@@ -94,7 +94,7 @@
 
 
 
-Visualizing an alpha factor's decay rate
+アルファファクターの減衰率の可視化
 ------------------------------------------
 
 多くのファンダメンタルデータは、年4回の四半期レポートでしか取得できません。頻度が低いのでなるべくたくさんのファンダメンタルデータを ``get_clean_factor_and_forward_returns()`` に渡したほうが将来を見通すためには有用です。
@@ -122,6 +122,7 @@ Visualizing an alpha factor's decay rate
 
 
 この例は約一ヵ月のチャートですが、1年先のICを計算するとチャートはどのような線を描くでしょうか。やってみましょう。
+
 
 .. code:: python
    :caption: base_code
