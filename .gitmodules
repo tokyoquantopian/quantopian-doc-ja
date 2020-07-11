@@ -1,0 +1,3 @@
+[submodule "research_public"]
+	path = research_public
+	url = https://github.com/quantopian/research_public.git
