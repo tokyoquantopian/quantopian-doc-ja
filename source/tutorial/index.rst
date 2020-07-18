@@ -1,8 +1,8 @@
 .. _tutorial:
 
-===============
-Getting Started
-===============
+======================
+Getting Started (Old)
+======================
 
 .. toctree::
    :maxdepth: 2
@@ -16,6 +16,19 @@ Getting Started
    1_getting_started_lesson6
    1_getting_started_lesson7
    1_getting_started_lesson8
+
+
+=====================
+Getting Started (New)
+=====================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   1_getting_started_lesson1_community
+
+
 
 ===============
 Pipeline
