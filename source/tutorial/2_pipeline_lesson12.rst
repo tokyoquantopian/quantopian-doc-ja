@@ -288,11 +288,7 @@ Research環境で使った必要なimport文と、　``make_pipeline`` 関数を
 
 最後にここまでの成果をひとまとめにします。リバランスの回数は週1回とします。
 
-<<<<<<< HEAD
-（訳注：Quantopianの `オンラインレッスン上 <https://www.quantopian.com/tutorials/pipeline#lesson12>`__ では、Cloneボタンをクリックすることで以下のアルゴリズムを自分のIDE環境にコピーできます）
-=======
 （訳注：Quantopianのオンラインレッスン上では、Cloneボタンをクリックすることで以下のアルゴリズムを自分のIDE環境にコピーできます）
->>>>>>> origin
 
 .. code:: ipython2
 
