@@ -3,7 +3,7 @@ Pipeline API
 
 .. warning:: 
 
-   このTutorialで使用している PsychSignal Trader Mood データは２０２０年５月で更新終了しました。ご注意下さい。データに関する詳しい情報は `PsychSignal Trader Mood (DEPRECATED) <https://www.quantopian.com/docs/data-reference/psychsignal#psychsignal-data-reference>`__ を参照して下さい。
+   このTutorialで使用している PsychSignal Trader Mood データは２０２０年５月で更新は終了していますので、それ以前の日付を指定してチュートリアルを進めて下さい。本チュートリアルでは、2013-01-01から2013-12-31のデータを使用しています。データに関する詳しい情報は `PsychSignal Trader Mood (DEPRECATED) <https://www.quantopian.com/docs/data-reference/psychsignal#psychsignal-data-reference>`__ を参照して下さい。
 
 Pipeline APIは、横断的に資産データ分析を行うための強力なツールです。これにより、複数のデータに対して一連の演算を行い、一度に大量の資産を分析することができます。
 一般的なPipeline API の用途として、以下のようなものがあります。
