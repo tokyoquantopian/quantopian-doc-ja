@@ -1,63 +1,51 @@
 Welcome
 -------
 
-Welcome to Quantopian. In this tutorial, we introduce Quantopian, the
-problems it aims to solve, and the tools it provides to help you solve
-those problems. At the end of this lesson, you should have a high level
-understanding of what you can do with Quantopian.
+`原作ページ <https://www.quantopian.com/tutorials/getting-started>`__
 
-The focus of the tutorial is to get you started, not to make you an
-expert Quantopian user. If you already feel comfortable with the basics
-of Quantopian, there are other resources to help you learn more about
-Quantopian’s tools: -
-`Documentation <https://www.quantopian.com/docs/index>`__ - `Pipeline
-Tutorial <https://www.quantopian.com/tutorials/pipeline>`__ - `Alphalens
-Tutorial <https://www.quantopian.com/tutorials/alphalens>`__
+Quantopianへようこそ。このチュートリアルではまずQuantopianについて紹介します。
+Quantopianで解決できる問題や、解決するために助けとなるツールの紹介を行います。
+レッスンを終えれば、Quantopianを使うのに十分な理解を得ることが出来るでしょう。
 
-All you need to get started on this tutorial is some basic
-`Python <https://docs.python.org/3.5/>`__ programming skills.
+チュートリアルでは、Quantopianを使いこなせるようになることを目的としていますが、Quantopianのエキスパートになることを目的としたものではありません。Quantopianの基本的な使い方に慣れている方は、Quantopianのツールをより深く理解するためのリソースがありますのでこちらをお勧めします。
 
-Note: You are currently viewing this tutorial lesson in the Quantopian
-**Research** environment. Research is a hosted Jupyter notebook
-environment that allows you to interactively run Python code. Research
-comes with a mix of proprietary and open-source Python libraries
-pre-installed. To learn more about Research, see the
-`documentation <https://www.quantopian.com/docs/user-guide/environments/research>`__.
-You can follow along with the code in this notebook by cloning it. Each
-cell of code (grey boxes) can be run by pressing Shift + Enter. **This
-tutorial notebook is read-only**. If you want to make changes to the
-notebook, create a new notebook and copy the code from this tutorial.
+* `Documentation <https://www.quantopian.com/docs/index>`__ 
+* `Pipeline Tutorial <https://www.quantopian.com/tutorials/pipeline>`__  (`翻訳 <https://quantopian-doc.readthedocs.io/ja/latest/tutorial/index.html#pipeline>`__  )
+* `Alphalens Tutorial <https://www.quantopian.com/tutorials/alphalens>`__ (`未翻訳 <https://quantopian-doc.readthedocs.io/ja/latest/tutorial/index.html>`__ ) 
 
-What is Quantopian?
+このチュートリアルを始めるためには、基本的な `Python <https://docs.python.org/3.5/>`__ のプログラミングスキルが必要です。
+
+.. note:: 
+
+   `原作ページ <https://www.quantopian.com/tutorials/getting-started>`__ のチュートリアルはQuantopian Research 環境がすく利用できる形で記載されています。Researchはクラウドホスト型のJupyter notebook です。Pythonコードをインタラクティブに実行することができます。
+   
+   Quantopianにログイン後、`原作ページ <https://www.quantopian.com/tutorials/getting-started>`__ のノートブックをクローンすることでチュートリアルのコードを実行することができます。クローンするには原作ページの `Get Notebook` ボタンを押して下さい。
+
+   Research の詳細については、 `documentation <https://www.quantopian.com/docs/user-guide/environments/research>`__ を参照してください。
+
+
+
+Quantopianとは？
 -------------------
 
-Quantopian is a cloud-based software platform that allows you to
-research quantitative financial factors in developed and emerging equity
-markets around the world using Python. Quantopian makes it easy to
-iterate on ideas by supplying a fast, uniform API on top of all sorts of
-`financial
-data <https://www.quantopian.com/docs/data-reference/overview>`__.
-Additionally, Quantopian provides tools to help you `upload your own
-financial
-datasets <https://www.quantopian.com/docs/user-guide/tools/self-serve>`__,
-analyze the efficacy of your factors, and share your findings with a
-global community of quants.
+Quantopianは、Pythonを使って世界中の先進国および新興国の株式市場における定量的な金融要因を調査できるクラウドベースのソフトウェアプラットフォームです。Quantopiahでは、あらゆる種類の `金融データ <https://www.quantopian.com/docs/data-reference/overview>`__ に加え、高速で統一されたAPIを提供します。それによってあなたは自身の戦略アイデアのテストを簡単にかつ何度も繰り返し実行できます。また、Quantopianには、 `あなた独自の金融データセットをアップロード <https://www.quantopian.com/docs/user-guide/tools/self-serve>`__ したり、ファクターの有効性を分析したり、グローバルなクオンツコミュニティと結果を共有したりするためのツールも用意されています。
 
-Typically, researching cross-sectional equity factors involves the
-following steps: 1. Define a universe of assets. 2. Define a factor over
-the universe. 3. Test the factor. 4. Share and discuss results with
-other quants with an eye toward improving your approach.
+さまざまな業種の株式に対してファクターを調査する方法は、Quantopianでの手順はいかのようなステップになります：
 
-On Quantopian, steps 1 and 2 are achieved using `the Pipeline
-API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__, step
-3 is done using a tool called
-`Alphalens <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__,
-and step 4 is done in the `Quantopian community
-forum <https://www.quantopian.com/posts>`__. The rest of this tutorial
-will give a brief walkthrough of an end-to-end factor research workflow
-on Quantopian.
+1. 取引対象銘柄を定義する
+2. 取引対象銘柄に対して、ファクターを定義する
+3. ファクターが機能するかどうかテストする
+4. 他のクオンツ（訳注：ここでは forum に参加している他のユーザーのことを言う）に結果をシェアしあなたの戦略アプローチについて議論する
 
-Research Environment
+ステップ１と２は、  `Pipeline
+API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__ で実行し、
+ステップ３は  `Alphalens <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__ を使います。ステップ４は  `Quantopian community
+forum <https://www.quantopian.com/posts>`__ で行います。
+
+さてこの後のチュートリアルでは、Quantopianでのリサーチワークフローの簡単な説明を行っていきます。
+
+
+Research 環境
 ~~~~~~~~~~~~~~~~~~~~
 
 The code in this tutorial can be run in Quantopian’s **Research**
@@ -70,6 +58,10 @@ libraries pre-installed. To learn more about Research, see the
 `documentation <https://www.quantopian.com/docs/user-guide/environments/research>`__.
 
 Press **Shift+Enter** to run each cell of code (grey boxes).
+
+
+チュートリアル中のコードは、 Quantopian の 
+
 
 Step 1 - Define a universe of assets.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
