@@ -48,44 +48,22 @@ forum <https://www.quantopian.com/posts>`__ で行います。
 Research 環境
 ~~~~~~~~~~~~~~~~~~~~
 
-The code in this tutorial can be run in Quantopian’s **Research**
-environment (this notebook is currently running in Research). Research
-is a hosted
-`Jupyter <https://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__
-notebook environment that allows you to interactively run Python code.
-Research comes with a mix of proprietary and open-source Python
-libraries pre-installed. To learn more about Research, see the
-`documentation <https://www.quantopian.com/docs/user-guide/environments/research>`__.
+チュートリアルのコードは、 Quantopian の **Research** 環境で実行できます。 Research は `Jupyter <https://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html>`__ ノートブック環境で提供されており、Pythonをインタラクティブに実行することができます。 Researchでは、Quantopianが独自に作成した Pythonのライブラリと、いくつかのサードパーティライブラリがインストールされています。くわしくは、 `documentation <https://www.quantopian.com/docs/user-guide/environments/research>`__ を参照してください。
 
-Press **Shift+Enter** to run each cell of code (grey boxes).
+`原作ページ <https://www.quantopian.com/tutorials/getting-started>`__ にある  `Get Notebook ` ボタンをおすことで、このチュートリアルのコードを試してみることができます。
+Pythonを実行するには、コードを記入したセル上で **Shift+Enter** 同時に押下してください。コードセルは、背面が少し灰色のセルです。
 
-
-チュートリアル中のコードは、 Quantopian の 
-
-
-Step 1 - Define a universe of assets.
+Step 1 - 取引対象銘柄を定義する
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first step to researching a cross-sectional equity factor is to
-select a “universe” of equities over which our factor will be defined.
-In this context, a universe represents the set of equities we want to
-consider when performing computations later. On Quantopian, defining a
-universe is done using the `the Pipeline
-API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__.
-Later on, we will use the same API to compute factors over the equities
-in this universe.
+さまざまな業種の株式に対してファクターを調査する時、最初のステップは「ユニバース（取引対象銘柄）」を設定することです。ここでいう「ユニバース」とは、後で分析計算を行う際に考慮したい株式の集合を意味します。
+Quantopianでは、ユニバースの定義は `Pipeline
+API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__ を使って行います。同APIを使って、ファクター計算も行います。
 
-The Pipeline API provides a uniform interface to several `built-in
-datasets <https://www.quantopian.com/docs/data-reference/overview>`__,
-as well as any `custom
-datasets <https://www.quantopian.com/custom-datasets>`__ that we upload
-to our account. Pipeline makes it easy to define computations or
-expressions using built-in and custom data. For example, the following
-code snippet imports two built-in datasets, `FactSet
-Fundamentals <https://www.quantopian.com/docs/data-reference/factset_fundamentals>`__
-and `FactSet Equity
-Metadata <https://www.quantopian.com/docs/data-reference/equity_metadata>`__,
-and uses them to define an equity universe.
+Pipeline APIは、いくつかの組み込みデータセットやユーザーがアップロードする `カスタムデータセット <https://www.quantopian.com/custom-datasets>`__ への統一されたインターフェースを提供しています。Pipelineを使用すると、組み込みデータやカスタムデータを使用した計算や式を簡単に定義することができます。たとえば、次のコード例は、2 つの組み込みデータセット、  `FactSet
+Fundamentals <https://www.quantopian.com/docs/data-reference/factset_fundamentals>`__  と  `FactSet Equity
+Metadata <https://www.quantopian.com/docs/data-reference/equity_metadata>`__ をインポートし、それらを使用してユニバースを定義しています。
+
 
 .. code:: ipython3
 
@@ -99,32 +77,21 @@ and uses them to define an equity universe.
     
     universe = market_cap.top(1000, mask=primary_shares)
 
-The above example defines a universe to be the top 1000 primary issue
-common stocks ranked by market cap. Universes can be defined using any
-of the data available on Quantopian. Additionally, you can upload your
-own data, such as index constituents or another custom universe to the
-platform using the Self-Serve Data tool. To learn more about uploading a
-custom dataset, see the `Self-Serve Data
-documentation <https://www.quantopian.com/docs/user-guide/tools/self-serve>`__.
-For now, we will stick with the universe definition above.
+上記の例では、時価総額でランク付けされた主要銘柄の普通株式の上位1000銘柄をユニバースとして定義しています。
+ユニバースは、Quantopianで利用可能なデータを使用して定義することができます。
+また、セルフサーブデータツールを使用して、インデックス構成銘柄やその他カスタマイズしたユニバースなど、独自のデータをプラットフォームにアップロードすることもできます。カスタムデータセットのアップロード方法については、 `Self-Serve Data
+documentation <https://www.quantopian.com/docs/user-guide/tools/self-serve>`__ を参照してください。今回は、上記に定義したユニバースを使っていきます。
 
-Step 2 - Define a factor.
+
+Step 2 - ファクターを定義
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After defining a universe, the next step is to define a factor for
-testing. On Quantopian, a factor is a computation that produces
-numerical values at a regular frequency for all assets in a universe.
-Similar to step 1, we will use the `the Pipeline
-API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__ to
-define factors. In addition to providing a fast, uniform API on top of
-pre-integrated and custom datasets, Pipeline also provides a set of
-built-in
-`classes <https://www.quantopian.com/docs/api-reference/pipeline-api-reference#built-in-factors>`__
-and
-`methods <https://www.quantopian.com/docs/api-reference/pipeline-api-reference#methods-that-create-factors>`__
-that can be used to quickly define factors. For example, the following
-code snippet defines a momentum factor using fast and slow moving
-average computations.
+ユニバースを定義したら、次はファクターを定義しテストしてみましょう。
+Quantopianにおいてファクターとは、ユニバース内のアセットに対して一定の頻度で数値を生成する計算のことです。ステップ1と同様に、  ` Pipeline
+API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__ を使用してファクターを定義します。Pipelineは、予め整備されたデータセットに、高速かつ統一された方法でアクセスするAPIを提供します。また、多数の  `ビルドインクラス <https://www.quantopian.com/docs/api-reference/pipeline-api-reference#id8>`__ や  `メソッド <https://www.quantopian.com/docs/api-reference/pipeline-api-reference#factor-methods>`__ が提供されており、これらを使用して素早くファクターを定義することができます。
+
+たとえば、次のコード例は、移動平均算出日数が少ない移動平均(fase) と多い移動平均(slow) を使ってモメンタムを計算しています。
+
 
 .. code:: ipython3
 
@@ -132,33 +99,20 @@ average computations.
     from quantopian.pipeline.data import EquityPricing
     from quantopian.pipeline.factors import SimpleMovingAverage
     
-    # 1-month (21 trading day) moving average factor.
+    # 1ヶ月 (21 営業日) moving average factor.
     fast_ma = SimpleMovingAverage(inputs=[EquityPricing.close], window_length=21)
     
-    # 6-month (126 trading day) moving average factor.
+    # 6ヶ月 (126 営業日) moving average factor.
     slow_ma = SimpleMovingAverage(inputs=[EquityPricing.close], window_length=126)
     
-    # Divide fast_ma by slow_ma to get momentum factor and z-score.
+    # fast_ma を slow_ma で割ってモメンタムを算出し、その z-scoreを算出
     momentum = fast_ma / slow_ma
     momentum_factor = momentum.zscore()
 
-Now that we defined a universe and a factor, we can choose a market and
-time period and simulate the factor. One of the defining features of the
-Pipeline API is that it allows us to define universes and factors using
-high level terms, without having to worry about common data engineering
-problems like
-`adjustments <https://www.quantopian.com/docs/data-reference/overview#corporate-action-adjustments>`__,
-`point-in-time
-data <https://www.quantopian.com/docs/data-reference/overview#point-in-time-data>`__,
-`symbol
-mapping <https://www.quantopian.com/docs/data-reference/overview#asset-identifiers>`__,
-delistings, and data alignment. Pipeline does all of that work behind
-the scenes and allows us to focus our time on building and testing
-factors.
+ユニバースとファクターを定義したので、市場と期間を選択し、ファクターをシミュレーションすることができます。Pipeline APIの特徴の1つは、  `株価調整 <https://www.quantopian.com/docs/data-reference/overview#corporate-action-adjustments>`__ 、`point-in-time
+データ <https://www.quantopian.com/docs/data-reference/overview#point-in-time-data>`__ 、 `銘柄シンボルマッピング <https://www.quantopian.com/docs/data-reference/overview#asset-identifiers>`__ 、上場廃止、データアラインメントなどの一般的なデータエンジニアリングの問題を気にすることなく、ユニバースとファクターを定義できることです。Pipeline はこれらの作業をすべて裏で行ってくれるので、ファクターの構築やテストに時間を割くことができます。
 
-The below code creates a Pipeline instance that adds our factor as a
-column and screens down to equities in our universe. The Pipline is then
-run over the US equities market from 2016 to 2019.
+以下のコードは、Pipeline インスタンスを作成してファクターをコラムとして追加し、私達のユニバースに合致するように株式をスクリーニングしています。このPipelineを2016年から2019年の米国株式に対して実行します。
 
 .. code:: ipython3
 
@@ -175,18 +129,18 @@ run over the US equities market from 2016 to 2019.
     
     universe = market_cap.top(1000, mask=primary_shares)
     
-    # 1-month moving average factor.
+    # 1ヶ月移動平均ファクター
     fast_ma = SimpleMovingAverage(inputs=[EquityPricing.close], window_length=21)
     
-    # 6-month moving average factor.
+    # 6ヶ月移動平均ファクター
     slow_ma = SimpleMovingAverage(inputs=[EquityPricing.close], window_length=126)
     
-    # Divide fast_ma by slow_ma to get momentum factor and z-score.
+    # fast_ma を slow_ma で割ってモメンタムを算出し、その z-scoreを算出
     momentum = fast_ma / slow_ma
     momentum_factor = momentum.zscore()
     
     
-    # Create a US equities pipeline with our momentum factor, screening down to our universe.
+    # 作成したモメンタムファクターをつかって米国株のパイプラインを作成。ファクタを実行して株式をスクリーニング
     pipe = Pipeline(
         columns={
             'momentum_factor': momentum_factor,
@@ -195,86 +149,21 @@ run over the US equities market from 2016 to 2019.
         domain=US_EQUITIES,
     )
     
-    # Run the pipeline from 2016 to 2019 and display the first few rows of output.
+    # 2016〜2019年で実行し、実行結果を最初の5行だけ出力
     from quantopian.research import run_pipeline
     factor_data = run_pipeline(pipe, '2016-01-01', '2019-01-01')
     print("Result contains {} rows of output.".format(len(factor_data)))
     factor_data.head()
 
+このコードを実行すると ファクター値を持った pandas のデータフレームが生成され、最初の5行が表示されます。株式取引日ごとに、その日ユニバースに入った全銘柄にたいしてファクター値が算出されデータフレームに入ります。これで、ユニバースの各株式銘柄のモメンタム値と、2016年から2019年までの各日のモメンタム値がわかりました。
+
+.. attention:: ライセンスの制限により、Quantopianの一部のデータセットでは、直近の1～2年分のデータが外されている（ `holdouts <https://www.quantopian.com/docs/data-reference/overview#holdout-periods>`__ ）場合があります。各データセットには、最近のデータで外されているデータの長さが記録されています。例えば、FactSet Fundamentalsでは、直近1年分のデータがはずされています。 `Quantopian Enterprise <https://factset.quantopian.com>`__ ではデータは外されることはありません。
+
+次の画像は、この結果のデータフレームを示しています。
+
+.. image:: notebook_files/getting_started_screenshot1.png
 
 
-.. parsed-literal::
-
-    
-
-
-
-.. raw:: html
-
-    <b>Pipeline Execution Time:</b> 10.35 Seconds
-
-
-.. parsed-literal::
-
-    Result contains 376888 rows of output.
-
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th></th>
-          <th>momentum_factor</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th rowspan="5" valign="top">2016-01-04 00:00:00+00:00</th>
-          <th>Equity(67 [ADSK])</th>
-          <td>1.211037</td>
-        </tr>
-        <tr>
-          <th>Equity(76 [TAP])</th>
-          <td>1.252325</td>
-        </tr>
-        <tr>
-          <th>Equity(114 [ADBE])</th>
-          <td>0.816440</td>
-        </tr>
-        <tr>
-          <th>Equity(161 [AEP])</th>
-          <td>0.407423</td>
-        </tr>
-        <tr>
-          <th>Equity(185 [AFL])</th>
-          <td>0.288431</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-Running the above code produces a pandas dataframe, stored in the
-variable ``factor_data``, and display the first few rows of its output.
-The dataframe contains a momentum factor value per equity per day, for
-each equity in our universe, based on the definition we provided. Now
-that we have a momentum value for each equity in our universe, and each
-day between 2016 and 2019, we can test to see if our factor is
-predictive.
-
-**Note:** Due to licensing restrictions, some datasets on Quantopian
-have
-`holdouts <https://www.quantopian.com/docs/data-reference/overview#holdout-periods>`__
-on the most recent year or two of data. Each dataset is documented with
-the length of holdout on recent data. For instance, FactSet Fundamentals
-has the most recent year of data held out. Holdouts to not apply to
-`Quantopian Enterprise <https://factset.quantopian.com>`__.
 
 Step 3 - Test the factor.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
