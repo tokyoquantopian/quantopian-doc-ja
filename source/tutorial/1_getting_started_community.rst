@@ -165,393 +165,60 @@ API <https://www.quantopian.com/docs/user-guide/tools/pipeline>`__ を使用し�
 
 
 
-Step 3 - Test the factor.
+Step 3 - ファクターをテスト
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The next step is to test the predictiveness of the factor we defined in
-step 2. In order to determine if our factor is predictive, load returns
-data from Pipeline, and then feed the factor and returns data into
-`Alphalens <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__.
-The following code cell loads the 1-day trailing returns for equities in
-our universe, shifts them back, and formats the data for use in
-Alphalens.
+次にステップ2で定義したファクターの予測性をテストします。予測性の判断材料として、
+ファクタを算出した銘柄にたいして、算出日から将来の数日間の収益を計算し、ファクターとともに `Alphalens <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__ に渡します。次のコードは、各銘柄の一日先の収益を計算し、結果をその日のデータ（訳者注：つまり将来の結果を持ったデータ）としてファクターとともに Alphalensに渡すプログラムです。
 
 .. code:: ipython3
 
-    from quantopian.pipeline.factors import Returns
-    
-    # Create and run a Pipeline to get day-over-day returns.
-    returns_pipe = Pipeline(
-        columns={
-            '1D': Returns(window_length=2),
-        },
-        domain=US_EQUITIES,
-    )
-    returns_data = run_pipeline(returns_pipe, '2016-01-01', '2019-02-01')
-    
-    # Import alphalens and pandas.
-    import alphalens as al
-    import pandas as pd
-    
-    # Shift the returns so that we can compare our factor data to forward returns.
-    shifted_returns = al.utils.backshift_returns_series(returns_data['1D'], 2)
-    
-    # Merge the factor and returns data.
-    al_returns = pd.DataFrame(
-        data=shifted_returns, 
-        index=factor_data.index,
-        columns=['1D'],
-    )
-    al_returns.index.levels[0].name = "date"
-    al_returns.index.levels[1].name = "asset"
-    
-    # Format the factor and returns data so that we can run it through Alphalens.
-    al_data = al.utils.get_clean_factor(
-        factor_data['momentum_factor'],
-        al_returns,
-        quantiles=5,
-        bins=None,
-    )
+  from quantopian.research import get_forward_returns
+  import alphalens as al
 
+  # 次の日の結果を取得
+  returns_df = get_forward_returns(
+      factor_data['momentum_factor'],
+      [1],
+      US_EQUITIES
+  )
 
+  # ファクターとリターンをアルファレンズに渡す
+  al_data = al.utils.get_clean_factor(
+      factor_data['momentum_factor'],
+      returns_df,
+      quantiles=5,
+      bins=None,
+  )
 
-.. parsed-literal::
+次に、私達のモメンタムファクターを分析するためのティアシートを作成します。
 
-    
-
-
-
-.. raw:: html
-
-    <b>Pipeline Execution Time:</b> 1.96 Seconds
-
-
-.. parsed-literal::
-
-    Dropped 0.1% entries from factor data: 0.1% in forward returns computation and 0.0% in binning phase (set max_loss=0 to see potentially suppressed Exceptions).
-    max_loss is 35.0%, not exceeded: OK!
-
-
-Then, we can create a factor tearsheet to analyze our momentum factor.
 
 .. code:: ipython3
 
-    from alphalens.tears import create_full_tear_sheet
-    
-    create_full_tear_sheet(al_data)
+  from alphalens.tears import create_full_tear_sheet
+  create_full_tear_sheet(al_data)
+
+.. image:: notebook_files/getting_started_screenshot2.png
+.. image:: notebook_files/getting_started_screenshot3.png
+.. image:: notebook_files/getting_started_screenshot4.png
+
+Alphalensのティアシートは、ファクターがどのくらい予見することができるかについて洞察する指標を提供します。詳しくは Alphalensの `documentation <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__ を参照して下さい。
 
 
-.. parsed-literal::
+Step 4 - Quantopian Community でアイデアをシェアする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Quantiles Statistics
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>min</th>
-          <th>max</th>
-          <th>mean</th>
-          <th>std</th>
-          <th>count</th>
-          <th>count %</th>
-        </tr>
-        <tr>
-          <th>factor_quantile</th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>1</th>
-          <td>-0.074955</td>
-          <td>0.421041</td>
-          <td>0.210313</td>
-          <td>0.087290</td>
-          <td>75500</td>
-          <td>20.047423</td>
-        </tr>
-        <tr>
-          <th>2</th>
-          <td>0.036037</td>
-          <td>0.549411</td>
-          <td>0.344777</td>
-          <td>0.088091</td>
-          <td>75320</td>
-          <td>19.999628</td>
-        </tr>
-        <tr>
-          <th>3</th>
-          <td>0.176786</td>
-          <td>0.749339</td>
-          <td>0.492666</td>
-          <td>0.094418</td>
-          <td>74974</td>
-          <td>19.907755</td>
-        </tr>
-        <tr>
-          <th>4</th>
-          <td>0.334028</td>
-          <td>1.049384</td>
-          <td>0.693494</td>
-          <td>0.116546</td>
-          <td>75320</td>
-          <td>19.999628</td>
-        </tr>
-        <tr>
-          <th>5</th>
-          <td>0.550049</td>
-          <td>8.979527</td>
-          <td>1.236411</td>
-          <td>0.522688</td>
-          <td>75493</td>
-          <td>20.045565</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+興味深いファクターが見つかったら、 `Quantopian コミュニティフォーラム <https://www.quantopian.com/posts>`__ に参加している他のユーザーへシェアしてフィードバックを募りましょう。Quantopianで思いついたアイデアは自分のものですが、結果を共有することで、議論のきっかけになったり、他の人から学ぶ機会が生まれたりすることもあります。コミュニティフォーラムでは、Research notebookを投稿に添付することができます。アイデアの結果とコードを両方共有したい場合は、ノートブックをそのまま共有しましょう。コードを秘密にしたい場合は、ノートブックのコピーを作成し、Alphalensでファクター計算を実行し、Pipelineのコードがあるコードセルを削除し、Alphalensの結果だけをコミュニティの投稿で共有することができます。自分のコードや結果をコミュニティで共有したい場合は、説明を加えたり、質問をしたりすることで、他のユーザーとの生産的な会話が生まれる可能性が高くなります。
 
 
-.. parsed-literal::
-
-    Returns Analysis
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>1D</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Ann. alpha</th>
-          <td>-0.010</td>
-        </tr>
-        <tr>
-          <th>beta</th>
-          <td>0.113</td>
-        </tr>
-        <tr>
-          <th>Mean Period Wise Return Top Quantile (bps)</th>
-          <td>0.194</td>
-        </tr>
-        <tr>
-          <th>Mean Period Wise Return Bottom Quantile (bps)</th>
-          <td>-0.432</td>
-        </tr>
-        <tr>
-          <th>Mean Period Wise Spread (bps)</th>
-          <td>0.626</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-.. parsed-literal::
-
-    /venvs/py35/lib/python3.5/site-packages/alphalens/tears.py:275: UserWarning: 'freq' not set in factor_data index: assuming business day
-      UserWarning,
-
-
-
-.. parsed-literal::
-
-    <matplotlib.figure.Figure at 0x7fca4e78b358>
-
-
-
-.. image:: notebook_files/notebook_9_6.png
-
-
-.. parsed-literal::
-
-    Information Analysis
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>1D</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>IC Mean</th>
-          <td>0.005</td>
-        </tr>
-        <tr>
-          <th>IC Std.</th>
-          <td>0.135</td>
-        </tr>
-        <tr>
-          <th>Risk-Adjusted IC</th>
-          <td>0.038</td>
-        </tr>
-        <tr>
-          <th>t-stat(IC)</th>
-          <td>1.034</td>
-        </tr>
-        <tr>
-          <th>p-value(IC)</th>
-          <td>0.301</td>
-        </tr>
-        <tr>
-          <th>IC Skew</th>
-          <td>-0.288</td>
-        </tr>
-        <tr>
-          <th>IC Kurtosis</th>
-          <td>0.007</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-.. parsed-literal::
-
-    /venvs/py35/lib/python3.5/site-packages/statsmodels/nonparametric/kdetools.py:20: VisibleDeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
-      y = X[:m/2+1] + np.r_[0,X[m/2+1:],0]*1j
-
-
-
-.. image:: notebook_files/notebook_9_10.png
-
-
-.. parsed-literal::
-
-    /venvs/py35/lib/python3.5/site-packages/alphalens/utils.py:912: UserWarning: Skipping return periods that aren't exact multiples of days.
-      + " of days."
-
-
-.. parsed-literal::
-
-    Turnover Analysis
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>1D</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Quantile 1 Mean Turnover</th>
-          <td>0.117</td>
-        </tr>
-        <tr>
-          <th>Quantile 2 Mean Turnover</th>
-          <td>0.111</td>
-        </tr>
-        <tr>
-          <th>Quantile 3 Mean Turnover</th>
-          <td>0.096</td>
-        </tr>
-        <tr>
-          <th>Quantile 4 Mean Turnover</th>
-          <td>0.070</td>
-        </tr>
-        <tr>
-          <th>Quantile 5 Mean Turnover</th>
-          <td>0.030</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>1D</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Mean Factor Rank Autocorrelation</th>
-          <td>0.996</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-.. image:: notebook_files/notebook_9_15.png
-
-
-The Alphalens tearsheet offers insight into the predictive ability of a
-factor.
-
-To learn more about Alphalens, check out the
-`documentation <https://www.quantopian.com/docs/user-guide/tools/alphalens>`__.
-
-Step 4 - Discuss with the Quantopian Community
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When we have a factor that we like, we can share the result in the
-`Quantopian community forum <https://www.quantopian.com/posts>`__ and
-solicit feedback from community members. The ideas you come up with on
-Quantopian belong to you, but sometimes sharing a result can spark a
-discussion and create an opportunity to learn from others. In the
-community forum, Research notebooks can be attached to posts. If you
-want to share the result of your work **and** the code, you can share
-your notebook as is. If you want to keep the code to yourself, you can
-create a copy of your notebook, run your factor through Alphalens,
-delete the code cells that have your Pipeline code, and just share the
-Alphalens result in a community post.
-
-If you want to share your work or your result in the community, make
-sure to provide an explanation of some sort and ask questions to make it
-more likely that others will respond!
-
-Recap & Next Steps
+まとめと次のステップ
 ~~~~~~~~~~~~~~~~~~
 
-In this tutorial, we introduced Quantopian and walked through a factor
-research workflow using Pipeline and Alphalens. Quantopian has a rich
-set of `documentation <https://www.quantopian.com/docs/index>`__ which
-you can use to learn more about the platform. We recommend starting with
-the `User Guide <https://www.quantopian.com/docs/user-guide/overview>`__
-section of the documentation if you would like to grow your
-understanding of Quantopian or the `Data
-Reference <https://www.quantopian.com/docs/data-reference/overview>`__
-if you want to learn more about the data that’s available to you out of
-the box.
+このチュートリアルでは、Quantopianの概要を説明し、PipelineとAlphalensを使ってファクターを調べるワークフローを説明しました。Quantopianには豊富な `documentation <https://www.quantopian.com/docs/index>`__ が用意されており、プラットフォームについて詳しく知ることができます。Quantopianについて理解を深めたい場合は、ドキュメントの `User Guide <https://www.quantopian.com/docs/user-guide/overview>`__ を、また、すぐに利用できるデータについて詳しく知りたい場合は `Data
+Reference <https://www.quantopian.com/docs/data-reference/overview>`__ をご覧下さい。
 
-If you would like to learn more about `Quantopian’s enterprise
-offering <https://factset.quantopian.com/home>`__, please contact us at
-enterprise@quantopian.com.
+もし、 `Quantopian enterprise
+offering <https://factset.quantopian.com/home>`__ にご興味がある場合は、こちらへご連絡下さい。: enterprise@quantopian.com
+
+
