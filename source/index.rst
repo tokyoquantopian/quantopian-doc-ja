@@ -7,7 +7,7 @@ Quantopian 日本語翻訳
 =====================
 
 .. important:: 大事なお知らせ
-　　2020/10/30 Quantopianは無料のコミュニティサービスをクローズすると発表しました。（参照：[Quantopian’s Community Services are Closing](https://www.quantopian.com/posts/quantopians-community-services-are-closing)）これを受けて、Tokyo Quantopian User Groupで行っていた本翻訳プロジェクトも中断することを決定しました。今後の活動については後日お知らせいたします。
+　　2020/10/30 Quantopianは無料のコミュニティサービスをクローズすると発表しました。（参照：Quantopian’s Community Services are Closing https://www.quantopian.com/posts/quantopians-community-services-are-closing）これを受けて、Tokyo Quantopian User Groupで行っていた本翻訳プロジェクトも中断することを決定しました。今後の活動については後日お知らせいたします。
 
 
 .. important:: 免責事項（Disclaimer）
